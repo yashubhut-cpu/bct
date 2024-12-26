@@ -1,0 +1,257 @@
+/* Form.module.css */
+
+/* Apply Be Vietnam Pro globally to the form */
+.Form {
+    width: 410px;
+    height: 438px;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-left: 300px;
+    margin-top: 290px;
+    gap: 30px;
+    display: inline-flex;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font here */
+}
+
+.Title {
+    align-self: stretch;
+    height: 90px;
+    padding-bottom: 20px;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 8px;
+    display: flex;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+}
+
+.SignInTitle {
+    align-self: stretch;
+    color: #ffffff;
+    font-size: 36px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+    font-weight: 500;
+    word-wrap: break-word;
+}
+
+.WelcomeText {
+    color: #A3AED0;
+    font-size: 16px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+    font-weight: 400;
+    line-height: 16px;
+    word-wrap: break-word;
+}
+
+.Feild {
+    width: 410px;
+    height: 77px;
+    position: relative;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+}
+
+.FieldLabel {
+    left: 0;
+    top: 0;
+    position: absolute;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+}
+
+.Rectangle8 {
+    width: 410px;
+    height: 50px;
+    left: 0;
+    top: 27px;
+    position: absolute;
+    opacity: 0.7;
+    border-radius: 12px;
+    border: 1px #999999 solid;
+}
+
+.Icons {
+    width: 18px;
+    height: 18px;
+    left: 372px;
+    top: 43px;
+    position: absolute;
+}
+
+.Icon1, .Icon2 {
+    background: #A3AED0;
+}
+
+.MailText {
+    left: 20px;
+    top: 44px;
+    position: absolute;
+    color: #A3AED0;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 400;
+    line-height: 14px;
+    word-wrap: break-word;
+}
+
+.PasswordLabel {
+    left: 0;
+    top: 0;
+    position: absolute;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: #FFFFFF;
+}
+
+.Min8Characters {
+    left: 20px;
+    top: 44px;
+    position: absolute;
+    color: #A3AED0;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 400;
+    line-height: 14px;
+    word-wrap: break-word;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .MailText,
+    .Min8Characters {
+        font-size: 12px;
+        left: 15px;  /* Adjusted for smaller screen */
+        top: 30px;   /* Adjusted for smaller screen */
+    }
+
+    .PasswordLabel {
+        font-size: 12px;
+        left: 0;
+        top: 10px; /* Adjusted for smaller screen */
+    }
+}
+
+@media (max-width: 480px) {
+    .MailText,
+    .Min8Characters {
+        font-size: 11px;
+        left: 10px;  /* Further adjusted for very small screens */
+        top: 20px;   /* Further adjusted for very small screens */
+    }
+
+    .PasswordLabel {
+        font-size: 11px;
+        left: 0;
+        top: 5px;   /* Further adjusted for very small screens */
+    }
+}
+
+.IconBoximg {
+    width: 15px;
+    height: 15px;
+    margin-top: 45px;
+    margin-left: 380px;
+  }
+.ForgotAndCheckbox {
+    width: 401px;
+    height: 20px;
+    position: relative;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+}
+
+.KeepMeLoggedInContainer {
+    display: flex;
+    align-items: center;  /* Align checkbox and text vertically */
+    gap: 10px;  /* Space between checkbox and text */
+  }
+  
+  .KeepMeLoggedInCheckbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid white;  /* White border */
+    background-color: transparent;  /* Transparent background */
+    border-radius: 2px;  /* Rounded corners */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .KeepMeLoggedInIcon {
+    width: 12px;
+    height: 12px;
+    background-color: transparent;  /* Empty checkbox */
+    display: none;  /* Initially hidden */
+  }
+  
+  .KeepMeLoggedInText {
+    color: #ffffff;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 400;
+    line-height: 20px;
+    margin-left: 150px;
+    word-wrap: break-word;
+    white-space: nowrap; /* Prevents text from wrapping to the next line */
+  }
+  
+  
+
+
+.IconLinear {
+    width: 16px;
+    height: 16px;
+    position: relative;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    display: flex;
+}
+
+.ForgetPassword {
+    left: 280px;
+    top: 0;
+    position: absolute;
+    color: #ffffff;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+    font-weight: 500;
+    line-height: 20px;
+    word-wrap: break-word;
+}
+
+.Button {
+    width: 410px;
+    height: 54px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: #5177FF;
+    border-radius: 12px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    display: inline-flex;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+}
+
+.ButtonText {
+    text-align: center;
+    color: #ffffff;
+    font-size: 14px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    /* Apply Be Vietnam Pro font */
+    font-weight: 700;
+    line-height: 14px;
+    word-wrap: break-word;
+}
+

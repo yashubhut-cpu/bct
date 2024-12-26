@@ -1,0 +1,58 @@
+.header {
+    display: flex;
+    align-items: center;
+    position: revert;
+    width: -webkit-fill-available;
+    height: 14vh;
+    background: #13182c;
+    overflow: hidden;
+    z-index: 1;
+    margin-left: 14px;
+}
+
+.headerSection {
+    display: flex;
+    width: -webkit-fill-available;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px;
+    padding: 4px;
+}
+
+.searchbar {
+    width: 335px;
+    height: 41px;
+    flex-shrink: 0;
+    border-radius: 49px;
+    background: var(--box, #1C2546);
+}
+
+.searchIcon {
+    display: grid;
+    grid-auto-flow: column;
+    grid-gap: 0.5rem;
+    justify-items: start;
+    position: relative;
+    bottom: 32px;
+    align-items: center;
+    left: 10px;
+}
+
+.dropDownIcon {
+    display: grid;
+    grid-auto-flow: column;
+    grid-gap: 0.5rem;
+    justify-items: end;
+    position: absolute;
+    top: 65px;
+    align-items: center;
+    right: 30px;
+}
+
+.profileSection {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    align-items: center;
+}

@@ -1,0 +1,140 @@
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  gap: 10px;
+  height: 100vh;
+  background: var(--box, #1c2546);
+  transition: width 0.3s ease;
+  width: 260px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.logo {
+  display: flex;
+  width: 100%;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  margin: 15px 75px 0 0px;
+  transition: opacity 0.3s ease;
+  padding: 2rem;
+}
+
+.mainContainer hr {
+  width: 100%;
+  height: 1px;
+  opacity: 0.2;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+.sideBarTitle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin-left: 10px;
+  width: 100%;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-radius: 0.5rem;
+  transition: color 0.3s ease;
+  width: 100%;
+  color: #9CA3AF;
+  /* Default grey color */
+}
+
+.menuItemActive {
+  color: #FFFFFF;
+  /* White color for active item */
+}
+
+.menuItemIcon {
+  margin-right: 1rem;
+  transition: margin 0.3s ease, filter 0.3s ease;
+}
+
+.menuItemText {
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.profileSection {
+  margin-top: auto;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.profileImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #3A4A72;
+}
+
+.profileName {
+  margin-left: 1rem;
+  color: white;
+  font-size: small;
+  transition: opacity 0.3s ease;
+}
+
+.toggleButton {
+  position: absolute;
+  top: 10px;
+  right: -15px;
+  background: #5177ff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  color: white;
+}
+
+.collapsed {
+  width: 80px;
+}
+
+.collapsed .logo {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+}
+
+.collapsed .menuItemIcon {
+  margin-right: 0;
+}
+
+.collapsed .menuItemText,
+.collapsed .profileName {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.collapsed .profileSection {
+  justify-content: center;
+}
+
+.menuIconContainer {
+  display: flex;
+  margin: 10px 10px 0 0;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 0;
+}

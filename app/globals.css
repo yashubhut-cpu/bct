@@ -5,6 +5,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-family: 'Be Vietnam Pro', sans-serif;
+  /* Add Be Vietnam Pro font to root */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -14,8 +16,133 @@
   }
 }
 
+/* Global styles */
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: "#13182C";
+  font-family: var(--font-family);
+  /* Apply Be Vietnam Pro globally */
+}
+
+/* Heading Styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family);
+}
+
+/* Paragraph Styles */
+p {
+  font-family: var(--font-family);
+}
+
+
+html, body {
+  height: 100%;
+  margin: 0;
+  /* Removes default margin
+  /* padding: 0; */
+  /* Removes default padding */
+  /* overflow: hidden; */
+  /* Prevent scrollbars on the body */
+}
+
+/* Ensure the scrollbar is always visible and styled blue */
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  /* Width of the scrollbar */
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #5177FF;
+  /* Blue color for the scrollbar */
+  border-radius: 5px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background-color: #1C2546;
+  /* Background color of the scrollbar track */
+}
+
+/* For Firefox */
+.sidebar-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #5177FF #1C2546;
+  /* Blue scrollbar with dark track */
+}
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse; /* Ensure table borders collapse */
+  table-layout: auto; /* Adjust columns automatically based on content */
+}
+
+/* Header and body cell styling */
+th, td {
+  padding: 0.75rem 1rem; /* Consistent padding */
+  text-align: left;
+  vertical-align: middle; /* Ensures content is centered vertically */
+  border-bottom: 1px solid #ccc; /* Add a border for row separation */
+}
+
+th {
+  font-weight: bold; /* Bold headers */
+
+  color: #A3AED0; /* White text for headers */
+}
+
+/* Row styling */
+tr {
+  transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+tr:hover {
+  background-color: #34495E; /* Change background on hover */
+}
+
+/* Ensure icons and text in status column align well */
+.status-column {
+ 
+  align-items: center; /* Align status icon and text */
+}
+
+.status-column span {
+  margin-left: 0.5rem; /* Add some space between the icon and text */
+}
+
+/* Action column: ensure icons are aligned and spaced */
+.action-column {
+  display: flex;
+  justify-content: space-around; /* Distribute icons evenly */
+  align-items: center; /* Vertically center the icons */
+}
+
+.action-column svg {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.action-column svg:hover {
+  transform: scale(1.1); /* Slight hover effect */
+}
+
+/* Ensure table container allows horizontal scrolling if needed */
+.table-container {
+  overflow-x: scroll;
+  max-width: 100%;
+  padding: 1rem 0; /* Add padding for some space */
+}
+
+/* Add responsiveness for smaller screens */
+@media (max-width: 768px) {
+  th, td {
+    padding: 0.5rem; /* Smaller padding on mobile */
+  }
+
+  .action-column {
+    justify-content: space-between; /* Reduce spacing between icons on small screens */
+  }
+}
+
+/* Use Be Vietnam Pro font globally */
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
 }

@@ -1,0 +1,191 @@
+/* Main container for the dashboard */
+.dashboardContainer {
+  display: flex;
+  height: 100vh;
+  /* Ensures the dashboard takes full height */
+}
+
+/* Sidebar styles */
+.sidebar {
+  width: 260px;
+  background-color: #1C2546;
+  padding-top: 20px;
+}
+
+/* Main content area */
+.mainContent {
+  flex-grow: 1;
+  background-color: #13182c;
+  padding: 20px;
+  overflow-y: auto;
+  width: -webkit-fill-available;
+  margin-left: 80px;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.sidebarActive {
+  flex-grow: 1;
+  background-color: #13182c;
+  padding: 20px;
+  overflow-y: auto;
+  width: -webkit-fill-available;
+  margin-left: 260px;
+}
+
+/* Header section of the dashboard */
+.pageContent {
+  margin-top: 20px;
+}
+
+/* Main dashboard section with title */
+.mainDashboard {
+  margin-bottom: 40px;
+}
+
+.dashboardTitle {
+  color: white;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 36px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* Statistics container holding the stats cards */
+.statsContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 30px;
+}
+
+/* Individual stats cards */
+.statsCard {
+  width: -webkit-fill-available;
+  height: 130px;
+  padding: 20px;
+  background: rgba(81, 119, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-sizing: border-box;
+}
+
+/* Icon container for the stats cards */
+.iconContainer {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #5177FF;
+}
+
+/* Stats labels and values */
+.statsText {
+  display: flex;
+  flex-direction: column;
+  color: #5177FF;
+}
+
+.statsLabel {
+  color: #A3AED0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statsValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Chart containers */
+.chartsContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 30px;
+}
+
+/* Individual chart box */
+.chart {
+  width: -webkit-fill-available;
+  padding: 20px;
+  background: #1C2546;
+  border-radius: 20px;
+}
+
+.chartTitle {
+  color: white;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+/* Table section */
+.tableSection {
+  margin-top: 40px;
+}
+
+/* Table container */
+.tableContainer {
+  background: #1C2546;
+  border-radius: 20px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.tableTitle {
+  color: white;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* Table styles */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+.tableHeader {
+  text-align: left;
+  color: #A3AED0;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.tableRow {
+  display: table-row;
+  flex-wrap: nowrap;
+  border-bottom: 1px solid rgba(163, 174, 208, 0.2);
+}
+
+.tableCell {
+  padding: 15px 0;
+  font-size: 14px;
+}
+
+/* Status indicators for table rows */
+.statusActive {
+  color: #4CCE82;
+}
+
+.statusHold {
+  color: #5177FF;
+}
+
+.statusNotActive {
+  color: #FC5454;
+}
+
+/* Action icons for the table rows */
+.actionIcons {
+  display: flex;
+  gap: 14px;
+}
