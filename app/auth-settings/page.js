@@ -5,7 +5,7 @@ import styles from './settings.module.css'
 import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
 import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
 import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
-import Sidebar from "../component/sidebar/sidebar";
+import Sidebar from "../component/Sidebar/sidebar";
 import { useRouter } from 'next/navigation';
 import Header from "../component/Header/header";
 

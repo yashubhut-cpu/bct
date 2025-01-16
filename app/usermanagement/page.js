@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import React from "react";
 import styles from "../usermanagement/styles.module.css"; // Correctly import the CSS module here
-import Sidebar from "../component/sidebar/sidebar";
+import Sidebar from "../component/Sidebar/sidebar";
 import Table from "../component/tablecomponent"; // Import the Table component
 import columnsConfig from "../columnsConfig"; // Import the columnsConfig
 import { ChevronRight } from "lucide-react";

@@ -4,7 +4,7 @@ import styles from "../inputtradealert/inputtradealert.module.css";
 import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
 import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
 import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
-import Sidebar from "../component/sidebar/sidebar";
+import Sidebar from "../component/Sidebar/sidebar";
 import Home from "../component/Editor/editor";
 import dynamic from 'next/dynamic';
 import { useRouter } from "next/navigation";

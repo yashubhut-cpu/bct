@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import React from "react";
 import styles from "../groupmanagement/styles.module.css"; // Correctly import the CSS module here
-import Sidebar from "../component/sidebar/sidebar";
+import Sidebar from "../component/Sidebar/sidebar";
 import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
 import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
 import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
