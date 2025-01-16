@@ -18,7 +18,7 @@
   height: -webkit-fill-available;
   background: #1C2546;
   border-radius: 20px;
-  padding: 15 px;
+  padding: 15px;
   overflow-x: hidden;
 }
 
@@ -32,7 +32,7 @@
 .header {
   position: relative;
   margin-bottom: 15px;
-  
+
 }
 
 .headerSeparator {
@@ -43,7 +43,8 @@
   margin-top: 10px;
 }
 
-.headerRow, .dataRow {
+.headerRow,
+.dataRow {
   display: grid;
   grid-template-columns: 2fr 3fr 2fr 1fr 1fr 1fr;
   gap: 10px;
@@ -54,9 +55,9 @@
 .headerTitle {
   color: #A3AED0;
   font-size: 14px;
-  font-family: 'Be Vietnam Pro', sans-serif;
+  font-family: 'Be Vietnam Pro', serif;
   font-weight: 500;
- 
+
   text-transform: uppercase;
 }
 
@@ -67,10 +68,14 @@
   background: #A3AED0;
 }
 
-.groupName, .description, .editors, .date, .statusText {
+.groupName,
+.description,
+.editors,
+.date,
+.statusText {
   color: white;
   font-size: 14px;
-  font-family: 'Be Vietnam Pro', sans-serif;
+  font-family: 'Be Vietnam Pro', serif;
   line-height: 24px;
 }
 
@@ -78,7 +83,9 @@
   font-weight: 600;
 }
 
-.description, .editors, .date {
+.description,
+.editors,
+.date {
   font-weight: 300;
 }
 
@@ -111,26 +118,36 @@
   width: 190px;
   height: 40px;
   border-radius: 12px;
-  margin-right: 30px;
   display: flex;
   gap: 5%;
   justify-content: center;
   align-items: center;
   color: white;
   font-size: 14px;
-  font-family: 'Be Vietnam Pro', sans-serif;
+  font-family: 'Be Vietnam Pro', serif;
   font-weight: 300;
   background: #5177FF;
   cursor: pointer;
+  margin-left: auto;
 }
+
+@media (max-width: 425px) {
+  .pageButton {
+    width: 174px;
+  }
+}
+
+
 
 .pageButtonActive {
   border-color: #5177FF;
   color: #5177FF;
-} 
+}
 
 @media (max-width: 1024px) {
-  .headerRow, .dataRow {
+
+  .headerRow,
+  .dataRow {
     grid-template-columns: 2fr 3fr 2fr 1fr;
   }
 
@@ -140,17 +157,22 @@
 }
 
 @media (max-width: 768px) {
-  .headerRow, .dataRow {
+
+  .headerRow,
+  .dataRow {
     grid-template-columns: 2fr 3fr;
   }
 
-  .status, .date {
+  .status,
+  .date {
     display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .headerRow, .dataRow {
+
+  .headerRow,
+  .dataRow {
     grid-template-columns: 1fr;
   }
 
@@ -159,31 +181,56 @@
   }
 }
 
+/* Main container for the dashboard */
 .dashboardContainer {
-  display: flex;
-  
-}
-
-.mainContent {
-  display: block;
-  background-color: #13182c;
-  width: -webkit-fill-available;
-  padding: 0px 0px 10px 10px;
-}
-.mainContent {
+  /* display: flex; */
   height: 100vh;
-  transition: margin-left 0.3s ease, width 0.3s ease;
+  /* Ensures the dashboard takes full height */
 }
 
-.mainContent.expanded {
-  margin-left: 260px; /* Full sidebar width */
-  width: calc(100% - 260px);
+
+.sidebarActive {
+  flex-grow: 1;
+  background-color: #13182c;
+  padding: 10px;
+  overflow-y: auto;
+  width: -webkit-fill-available;
+  margin-left: 260px;
+  padding-bottom: 0;
+  height: 100vh;
 }
 
-.mainContent.collapsed {
-  margin-left: 80px; /* Collapsed sidebar width */
-  width: calc(100% - 80px);
+@media (max-width: 1024px) {
+  .sidebarActive {
+    margin-left: 0px;
+  }
 }
+
+
+
+@media (max-width: 1140px) {
+  .pageContent {
+    margin-top: 80px;
+  }
+}
+
+
+/* Main content area */
+.mainContent {
+  flex-grow: 1;
+  background-color: #13182c;
+  padding: 10px;
+  overflow-y: auto;
+  margin-left: 80px;
+}
+
+@media(max-width: 1024px) {
+  .mainContent {
+    margin-left: 0px;
+    margin-top: 90px;
+  }
+}
+
 /* .mainDashboard {
   display: block;
   margin-top: 120px;
@@ -217,3 +264,60 @@
   color: #5177FF;
 }
 
+
+/* Table container */
+.tableContainer {
+  background: #1c2546;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  /* Ensure the table layout is aligned */
+  overflow: auto;
+  /* Ensure scrollbars don't overflow content */
+  height: calc(100vh - 194px);
+
+}
+
+
+@media (max-width: 1440px) {
+  .tableContainer {
+    height: calc(100vh - 194px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .tableContainer {
+    height: calc(100vh - 277px);
+  }
+}
+
+
+@media (max-width: 768px) {
+  .tableContainer {
+    height: calc(100vh - 277px);
+  }
+}
+
+@media (max-width: 425px) {
+  .tableContainer {
+    height: calc(100vh - 290px);
+  }
+}
+
+@media (max-width: 375px) {
+  .tableContainer {
+    height: calc(100vh - 308px);
+  }
+}
+
+
+.force-overflow {
+  min-height: 450px;
+}
+
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}

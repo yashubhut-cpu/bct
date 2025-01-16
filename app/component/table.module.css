@@ -1,0 +1,50 @@
+.checkBoxContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkBoxContainer input[type="checkbox"] {
+  display: none;
+}
+
+.checkBoxContainer label {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+}
+
+.checkBoxContainer label::before {
+  content: "";
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-right: 8px;
+  border-radius: 4px;
+  border: 2px solid #A4A8B5;
+  position: relative;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Change checkbox style when checked */
+.checkBoxContainer input[type="checkbox"]:checked+label::before {
+  background-color: #5177ff;
+  border-color: #5177ff;
+}
+
+/* Position the checkmark inside the box (right side) */
+.checkBoxContainer input[type="checkbox"]:checked+label::after {
+  content: "✔";
+  position: absolute;
+  color: #fff;
+  font-size: 10px;
+  right: 12px;
+}
+
+/* Focus styling */
+.checkBoxContainer input[type="checkbox"]:focus+label::before {
+  outline: 2px solid #5177ff;
+}

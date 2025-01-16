@@ -1,18 +1,62 @@
-"use client"
-import { useState } from 'react';
-import Sidebar from "../component/Sidebar/sidebar";
+"use client";
+import { useState, useEffect } from "react";
+import Sidebar from "../component/sidebar/sidebar";
 import Table from "../component/tablecomponent";
+import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
+import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
+import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
 import columnsConfig from "../columnsConfig";
 import styles from "../dashboard/dashboard.module.css";
-import { Package, Bell, Users } from 'lucide-react';  // Fixed the import
+import Header from "../component/Header/header";
+import dynamic from 'next/dynamic';
+import YearSelector from "./YearSelector";
+import { useRouter } from "next/navigation";
+
+// Dynamically import MyChartComponent with SSR disabled
+const MyMonthlyChartComponent = dynamic(() => import('../component/monthly_chart/chart.js'), {
+  ssr: false
+});
+const MyWeeklyChartComponent = dynamic(() => import('../component/weekly_chart/chart'), {
+  ssr: false
+});
+
+
 
 export default function Dashboard() {
   const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+
+  const router = useRouter(); // Initialize the router
+
+  // useEffect(() => {
+  //   const accessToken = localStorage.getItem("accessToken");
+
+  //   if (accessToken) {
+  //     document.title = "Dashboard"; // Set document title for authenticated user
+  //     router.push('/dashboard'); // Redirect to dashboard
+  //   } else {
+  //     document.title = "Login"; // Set document title for unauthenticated user
+  //     router.push('/'); // Redirect to login
+  //   }
+  // }, [router]);
+
+
+
+  useEffect(() => {
+    document.title = "Dashboard" ;
+  
+
+  }, 
+  [router]);
+
 
   // Toggle the sidebar collapse state
   const toggleSidebar = () => {
     setIsSidebarActive(!isSidebarActive); // Toggle the state
-  };
+  }
+
+  const toggleMobileSidebar = () => setIsMobileSidebarActive(!isMobileSidebarActive);
+
 
   const alerts = [
     {
@@ -64,18 +108,22 @@ export default function Dashboard() {
 
   return (
     <div className={styles.dashboardContainer}>
-      <Sidebar isCollapsed={isSidebarActive} toggleSidebar={toggleSidebar}/>
-      {/* Conditionally applying the class for main content */}
-      <div className={`${isSidebarActive ? styles.mainContent : styles.sidebarActive}`}>
+    <Sidebar isCollapsed={isSidebarActive} toggleSidebar={toggleSidebar} isMobileActive={isMobileSidebarActive} />
+    {/* Conditionally applying the class for main content */}
+    <Header toggleSidebar={toggleMobileSidebar} />
+    <div
+      className={`${isSidebarActive ? styles.mainContent : styles.sidebarActive}`}
+    >
+
         <div className={styles.pageContent}>
           <div className={styles.mainDashboard}>
             <h1 className={styles.dashboardTitle}>Dashboard</h1>
 
-            <div className={styles.statsContainer}>
+            <div className={styles.statsContainer + " grid xl:grid-cols-4 md:grid-cols-2 mb-6"}>
               {/* Stats Cards */}
               <div className={styles.statsCard}>
                 <div className={`${styles.iconContainer} ${styles.blueIcon}`}>
-                  <Package color="white" size={24} />
+                  <img src="images/total_alert.svg" alt="Total Alerts" />
                 </div>
                 <div className={styles.statsText}>
                   <span className={styles.statsLabel}>Total Alerts Sent</span>
@@ -84,16 +132,18 @@ export default function Dashboard() {
               </div>
               <div className={styles.statsCard}>
                 <div className={`${styles.iconContainer} ${styles.orangeIcon}`}>
-                  <Users color="white" size={24} />
+                  <img src="images/SubscribersSegmented.svg" alt="Total Alerts" />
                 </div>
                 <div className={styles.statsText}>
-                  <span className={styles.statsLabel}>Subscribers Segmented</span>
+                  <span className={styles.statsLabel}>
+                    Subscribers Segmented
+                  </span>
                   <span className={styles.statsValue}>2549</span>
                 </div>
               </div>
               <div className={styles.statsCard}>
                 <div className={`${styles.iconContainer} ${styles.greenIcon}`}>
-                  <Bell color="white" size={24} />
+                  <img src="images/RecentAlerts.svg" alt="Total Alerts" />
                 </div>
                 <div className={styles.statsText}>
                   <span className={styles.statsLabel}>Recent Alerts</span>
@@ -102,7 +152,7 @@ export default function Dashboard() {
               </div>
               <div className={styles.statsCard}>
                 <div className={`${styles.iconContainer} ${styles.redIcon}`}>
-                  <Users color="white" size={24} />
+                  <img src="images/UserGroups.svg" alt="Total Alerts" />
                 </div>
                 <div className={styles.statsText}>
                   <span className={styles.statsLabel}>User Groups</span>
@@ -111,14 +161,23 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className={styles.chartsContainer}>
-              <div className={styles.chart}>
-                <h2 className={styles.chartTitle}>Monthly Alerts</h2>
-                <img src="./images/MonthlyAlerts.svg" alt="Chart Image" className={styles.chartImage} />
+            <div className={styles.chartsContainer + " grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-auto"}>
+              <div className={styles.chart + " w-full overflow-hidden"}>
+                <div className="flex justify-between items-center">
+                  <h2 className={styles.chartTitle}>Monthly Alerts</h2>
+                  <YearSelector />
+                </div>
+                {/* <img src="./images/MonthlyAlerts.svg" alt="Chart Image" className={styles.chartImage} /> */}
+                <MyMonthlyChartComponent />
+
+
               </div>
-              <div className={styles.chart}>
-                <h2 className={styles.chartTitle}>Weekly Alerts</h2>
-                <img src="./images/WeeklyAlerts.svg" alt="Chart Image" className={styles.chartImage} />
+              <div className={styles.chart + " w-full overflow-hidden"}>
+                <div className="flex justify-between items-center">
+                  <h2 className={styles.chartTitle}>Weekly Alerts</h2>
+                  <YearSelector />
+                </div>
+                <MyWeeklyChartComponent />
               </div>
             </div>
 
@@ -127,7 +186,10 @@ export default function Dashboard() {
               <div className={styles.tableContainer}>
                 <h2 className={styles.tableTitle}>Recent Alerts</h2>
                 <div className={styles.tableContent}>
-                  <Table alerts={alerts} visibleColumns={columnsConfig.dashboard} />
+                  <Table
+                    alerts={alerts}
+                    visibleColumns={columnsConfig.dashboard}
+                  />
                 </div>
               </div>
             </div>
@@ -137,3 +199,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

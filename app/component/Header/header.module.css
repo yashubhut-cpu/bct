@@ -1,22 +1,41 @@
 .header {
     display: flex;
     align-items: center;
-    position: revert;
+    position: fixed;
     width: -webkit-fill-available;
-    height: 14vh;
-    background: #13182c;
+    height: 90px;
+    background-color: #13182c;
     overflow: hidden;
     z-index: 1;
-    margin-left: 14px;
+    margin-left: 280px;
+    margin-right: 23px;
+    top: 0;
+    border-bottom: 1px solid #3c404e;
+    z-index: 49;
 }
+
+@media (max-width: 1140px) {
+    .header {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+}
+
+@media (min-width: 1140px) {
+    .header {
+        display: none;
+    }
+}
+
 
 .headerSection {
     display: flex;
     width: -webkit-fill-available;
     justify-content: space-between;
     align-items: center;
-    margin: 20px;
-    padding: 4px;
+    /* margin: 20px; */
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 .searchbar {
@@ -27,16 +46,7 @@
     background: var(--box, #1C2546);
 }
 
-.searchIcon {
-    display: grid;
-    grid-auto-flow: column;
-    grid-gap: 0.5rem;
-    justify-items: start;
-    position: relative;
-    bottom: 32px;
-    align-items: center;
-    left: 10px;
-}
+
 
 .dropDownIcon {
     display: grid;
@@ -55,4 +65,20 @@
     justify-content: flex-end;
     gap: 1rem;
     align-items: center;
+}
+
+.logo {
+    margin: "10px 0px 90px 0px"
+}
+
+.menuButton {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.menuIcon {
+    width: 24px;
+    height: 24px;
 }

@@ -1,142 +1,158 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Table from "../component/tablecomponent";
-import styles from "../logs&report/styles.module.css";
-import {ChevronRight } from "lucide-react";
+import styles from "../errornotification/styles.module.css";
+import { ChevronRight } from "lucide-react";
+import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
+import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
+import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
 import columnsConfig from "../columnsConfig";
-import Sidebar from "../component/Sidebar/sidebar";
+import Sidebar from "../component/sidebar/sidebar";
+import { useRouter } from "next/navigation";
+import Header from "../component/Header/header";
+
 
 export default function Errornotification() {
+  const router = useRouter(); // Initialize the router
 
-  const alerts = [
-    {
-      date_time: "03/10/2024 8:50pm",
-      trade_details: "META, $550/$580",
-      distribution_channel: "Email, SMS, WordPress",
-      groupName: "Market Mavericks",
-      editor_name: "ID154798208585",
-      subscriber: "Brooklyn Simmons",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 8:45pm",
-      trade_details: "GOOG, $175/$180",
-      distribution_channel: "Email, SMS, WordPress",
-      groupName: "Trading Titans",
-      editor_name: "ID154798208585",
-      subscriber: "Arlene McCoy",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 8:40pm",
-      trade_details: "AMZN, $205/$230",
-      distribution_channel: "Email, SMS",
-      groupName: "Equity Edge",
-      editor_name: "ID154798208585",
-      subscriber: "Leilani Alexander",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 8:35pm",
-      trade_details: "NVDA, $145/$165",
-      distribution_channel: "Email, SMS, WordPress",
-      groupName: "Stock Savvy Alerts",
-      editor_name: "ID154798208585",
-      subscriber: "Dianne Russell",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 8:25pm",
-      trade_details: "MSFT, $420/$450",
-      distribution_channel: "Email, SMS, WordPress",
-      groupName: "Bullish Breakouts",
-      editor_name: "ID154798208585",
-      subscriber: "Floyd Miles",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 8:20pm",
-      trade_details: "META, $550/$580",
-      distribution_channel: "Email, SMS",
-      groupName: "The Alert Authority",
-      editor_name: "ID154798208585",
-      subscriber: "Marvin McKinney",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 8:15pm",
-      trade_details: "GOOG, $175/$180",
-      distribution_channel: "Email, SMS, WordPress",
-      groupName: "Securities Spotlight",
-      editor_name: "ID154798208585",
-      subscriber: "Kristin Watson",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 8:10pm",
-      trade_details: "AMZN, $205/$230",
-      distribution_channel: "Email, SMS",
-      groupName: "Profit Pioneers",
-      editor_name: "ID154798208585",
-      subscriber: "Theresa Webb",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 8:05pm",
-      trade_details: "NVDA, $145/$165",
-      distribution_channel: "Email, SMS",
-      groupName: "Chart Chasers",
-      editor_name: "ID154798208585",
-      subscriber: "Jane Cooper",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 7:55pm",
-      trade_details: "MSFT, $420/$450",
-      distribution_channel: "SMS, WordPress",
-      groupName: "Trade Trailblazers",
-      editor_name: "ID154798208585",
-      subscriber: "Jacob Jones",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 7:50pm",
-      trade_details: "META, $550/$580",
-      distribution_channel: "Email, SMS, WordPress",
-      groupName: "Momentum Masters",
-      editor_name: "ID154798208585",
-      subscriber: "Cameron Williamson",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 7:45pm",
-      trade_details: "GOOG, $175/$180",
-      distribution_channel: "Email, SMS, WordPress",
-      groupName: "Investment Insights Hub",
-      editor_name: "ID154798208585",
-      subscriber: "Annette Black",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 7:40pm",
-      trade_details: "AMZN, $205/$230",
-      distribution_channel: "Email, SMS, WordPress",
-      groupName: "The Alert Network",
-      editor_name: "ID154798208585",
-      subscriber: "Darl Stewart",
-      action: "edit_delete"
-    },
-    {
-      date_time: "03/10/2024 7:40pm",
-      trade_details: "AMZN, $205/$230",
-      distribution_channel: "Email, SMS",
-      groupName: "The Alert Network",
-      editor_name: "ID154798208585",
-      subscriber: "Savannah Nguyen",
-      action: "edit_delete"
-    }
-    
-  ];
+
+  const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+
+  // Toggle the sidebar collapse state
+  const toggleSidebar = () => {
+    setIsSidebarActive(!isSidebarActive); // Toggle the state
+  }
+
+  const toggleMobileSidebar = () => setIsMobileSidebarActive(!isMobileSidebarActive);
+
+
+  useEffect(() => {
+    document.title = "Error Notification";
+  
+  }, [router]);
+
+  const alerts = [{
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Critical",
+    description: "Failed, internal server error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Network Issue",
+    description: "Failed, Network error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Analytical",
+    description: "Gateway Timeout",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Queued",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Syntax Error",
+    description: "Failed, Network error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "In Progress",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Critical",
+    description: "Failed, internal server error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Other",
+    description: "Non-Authoritative Information",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Network Issue",
+    description: "Failed, Network error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Critical",
+    description: "Failed, internal server error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Analytical",
+    description: "Gateway Timeout",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "In Progress",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Network Issue",
+    description: "Failed, Network error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Critical",
+    description: "Failed, internal server error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Other",
+    description: "Non-Authoritative Information",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Network Issue",
+    description: "Failed, Network error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Critical",
+    description: "Failed, internal server error",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "Completed",
+    action: ["Edit", "Delete"]
+  },
+  {
+    date_time: "03/10/2024 8:50pm",
+    error_type: "Analytical",
+    description: "Gateway Timeout",
+    affected_channel: "Lorem ipsum is simply dummy text of the printing",
+    status: "In Progress",
+    action: ["Edit", "Delete"]
+  }
+  ]
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleSidebarToggle = () => {
@@ -147,51 +163,50 @@ export default function Errornotification() {
 
   return (
     <div className={styles.dashboardContainer}>
-             <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={handleSidebarToggle} />
+      <Sidebar isCollapsed={isSidebarActive} toggleSidebar={toggleSidebar} isMobileActive={isMobileSidebarActive} />
+      {/* Conditionally applying the class for main content */}
+      <Header toggleSidebar={toggleMobileSidebar} />
       <div
-        className={`${styles.mainContent} ${
-          isSidebarCollapsed ? styles.collapsed : styles.expanded
-        }`}
+        className={`${isSidebarActive ? styles.mainContent : styles.sidebarActive}`}
       >
-      <div className={styles.mainContent}>
+        <div className={styles.pageContent}>
+        <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
+              Error Notification
+          </h2>
 
-        <h2
-          style={{
-            fontSize: "36px",
-            marginLeft: "29px",
-            color: "#ffffff",
-          }}
-        >Error Notifications
-        </h2>
-        <div className={styles.container}>
-        
-          {/* Table Section */}
-          <div className={styles.tableSection}>
-            <div className={styles.tableContainer}>
-              <div className={styles.tableContent}>
-                <Table alerts={alerts} visibleColumns={columnsConfig.database} />
+          </div>
+          <div className="mx-2 mb-4">
+            <div className="bg-[#1C2546] pb-4 rounded-[20px] shadow">
+              {/* Table Section */}
+              <div className={styles.tableSection}>
+                <div className={styles.tableContainer + " scrollbar"} id="style-2">
+                  <div className={styles.tableContent + " force-overflow p-4 pt-0"}>
+                    <Table alerts={alerts} visibleColumns={columnsConfig.errortype} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pagination Section */}
+              <div className={styles.pagination + " p-4"}>
+                <button
+                  className={`${styles.paginationButton} ${styles.active}`}
+                >
+                  1
+                </button>
+                <button className={styles.paginationButton}>2</button>
+                <button className={styles.paginationButton}>3</button>
+                <button className={styles.paginationButton}>...</button>
+                <button className={styles.paginationButton}>80</button>
+                <button className={styles.paginationButton}>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
-          </div>
-
-          {/* Pagination Section */}
-          <div className={styles.pagination}>
-            <button
-              className={`${styles.paginationButton} ${styles.active}`}
-            >
-              1
-            </button>
-            <button className={styles.paginationButton}>2</button>
-            <button className={styles.paginationButton}>3</button>
-            <button className={styles.paginationButton}>...</button>
-            <button className={styles.paginationButton}>80</button>
-            <button className={styles.paginationButton}>
-              <ChevronRight className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </div>
     </div>
-    </div>
+
   );
 }

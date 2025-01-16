@@ -1,18 +1,121 @@
 "use client";
 // Import the useRouter hook for navigation
 import { useRouter } from 'next/navigation';
-import { useState } from "react";
+
+import { useState,useEffect } from "react";
+import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
+import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
+import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
+
+
 export default function Home() {
   const router = useRouter(); // Initialize the router
-
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
-    // Navigate to the dashboard page
-    router.push('/dashboard');
-  };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    document.title = "Login";
+    if(localStorage.getItem("accessToken")){
+      router.push('/dashboard')
+    }else{
+      router.push('/')
+    }
+  }, [router]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+  
+    try {
+      const response = await fetch(
+        "https://bct-trade-alert-backend-production.up.railway.app/user_management/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", // Ensure JSON content type
+          },
+          body: JSON.stringify({ email, password }), // Dynamically include email and password
+        }
+      );
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Handle success
+        console.log("Login successful:", data?.tokens?.access);
+  
+        // Store tokens in localStorage
+        localStorage.setItem("accessToken", data?.tokens?.access);
+        localStorage.setItem("refreshToken", data?.tokens?.refresh);
+  
+        // Redirect to dashboard
+        router.push("/dashboard");
+      } else {
+        // Handle error response
+        console.error("Validation errors:", data.error);
+        const errorMessage =
+          data.error?.email?.[0] ||
+          data.error?.password?.[0] ||
+          data.message ||
+          "Login failed. Please Check Username/Password.";
+        setErrorMessage(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+  
+      // Check if refresh token exists and is expired
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken) {
+        try {
+          // Try refreshing the token
+          const refreshResponse = await fetch(
+            "https://bct-trade-alert-backend-production.up.railway.app/user_management/api/token/refresh/",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ refreshToken }),
+            }
+          );
+  
+          const refreshData = await refreshResponse.json();
+  
+          if (refreshResponse.ok) {
+            // Successfully got new tokens, store them
+            console.log("Refresh token success:", refreshData);
+  
+            // Update tokens in localStorage
+            localStorage.setItem("accessToken", refreshData.accessToken);
+            localStorage.setItem("refreshToken", refreshData.refreshToken);
+  
+            // Optionally, rerun the login logic or proceed to the dashboard
+            router.push("/dashboard");
+          } else {
+            console.error("Refresh token failed:", refreshData);
+            setErrorMessage("Session expired, please login again.");
+          }
+        } catch (error) {
+          console.error("Error refreshing token:", error);
+          setErrorMessage("An error occurred while refreshing the session.");
+        }
+      } else {
+        setErrorMessage("An error occurred. Please try again later.");
+      }
+    }
+  };
+  
+
+
+
+
+
+
+
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
+
   return (
     <div
       style={{
@@ -32,8 +135,8 @@ export default function Home() {
           height: "560px",
           borderRadius: "50%",
           position: "absolute",
-          top: "-150px",
-          left: "-150px",
+          top: "0",
+          right: "80%",
           filter: "blur(100px)",
           opacity: "0.60",
           zIndex: "1",
@@ -49,72 +152,67 @@ export default function Home() {
           height: "560px",
           borderRadius: "50%",
           position: "absolute",
-          bottom: "-150px",
-          right: "-150px",
+          bottom: "0",
+          left: "80%",
           filter: "blur(100px)",
           opacity: "0.60",
           zIndex: "1",
         }}
       ></div>
 
-      {/* Background image illustration */}
-      <div
-        style={{
-          position: "absolute",
-          top: "255px",
-          left: "1296px",
-          width: "542px",
-          height: "542px",
-          opacity: 1,
-        }}
-      >
-        <img
-          src="/images/Illustration.svg"
-          alt="Illustration"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-      </div>
 
       {/* Sign-in Form Design */}
-      <div
+      <div className=''
         style={{
           display: "flex",
-          flexDirection: "column", // Align elements vertically (logo above, form below)
-          justifyContent: "flex-start",
-          alignItems: "flex-start", // Align left
+          justifyContent: "center", // Center vertically
+          alignItems: "center", // Align left
           height: "100vh",
           backgroundColor: "#1E1E2F",
-          padding: "20px", // Adjust padding as needed
+          padding: "20px 20px 20px 00px", // Adjust padding as needed
+          gap: "100px",
         }}
       >
+
         {/* Sign-in Box */}
         <div
           style={{
             width: "100%",
-            maxWidth: "400px", // Max width of the form box
-            padding: "40px",
+            maxWidth: "450px", // Max width of the form box
+            padding: "30px",
             color: "#ffffff",
-            textAlign: "left",
             lineHeight: "0.2",
-            position: "absolute", // Fixed position for the sign-in box
-            top: "350px", // Adjust the top position as needed, make it below the logo
-            left: "300px", // Align the box to the left side of the screen
+            zIndex: "2",
           }}
         >
+          {/* Background image logo */}
+          <div
+            style={{
+              width: "200px",
+              height: "auto",
+              opacity: 100,
+            }}
+          >
+            <img
+              src="/images/bct_small.svg"
+              alt="bct_small"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          </div>
           {/* Sign-in header */}
           <h4
-            style={{ color: "ffffff", marginBottom: "30px", fontSize: "40px" }}
+            style={{ color: "ffffff", marginBottom: "30px", fontSize: "40px", marginTop: "50px" }}
           >
             Sign In
           </h4>
           <p
             style={{
               color: "#A4A6B3",
-              lineHeight: "0.3",
+              lineHeight: "16px",
               marginBottom: "30px",
             }}
           >
@@ -137,6 +235,8 @@ export default function Home() {
               <input
                 type="email"
                 placeholder="mail@simmmple.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -178,6 +278,8 @@ export default function Home() {
               <input
                 type={showPassword ? "text" : "password"} // This changes based on showPassword
                 placeholder="Min. 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -211,7 +313,12 @@ export default function Home() {
               </div>
             </div>
 
-
+            {/* Error message */}
+            {errorMessage && (
+              <div style={{ color: "red", marginBottom: "20px" }}>
+                {errorMessage}
+              </div>
+            )}
 
             {/* "Keep me logged in" checkbox and "Forgot password" */}
             <div
@@ -252,52 +359,50 @@ export default function Home() {
                 </a>
               </div>
             </div>
+
+            {/* Submit button */}
+            <div style={{ marginBottom: "20px" }}>
+              <button
+                type="submit" // Submit button triggers the form submission
+                style={{
+                  width: "100%",
+                  padding: "20px",
+                  borderRadius: "8px",
+                  backgroundColor: "#4E71F3", // Blue button color
+                  border: "none",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                }}
+              >
+                Sign In
+              </button>
+            </div>
           </form>
-
-          {/* Submit button */}
-          <div style={{ marginBottom: "20px" }}>
-            <button
-              type="submit" // Submit button triggers the form submission
-              onClick={handleSubmit}
-              style={{
-                width: "100%",
-                padding: "20px",
-                borderRadius: "8px",
-                backgroundColor: "#4E71F3", // Blue button color
-                border: "none",
-                color: "#fff",
-                fontWeight: "bold",
-                cursor: "pointer",
-                fontSize: "16px",
-              }}
-            >
-              Sign In
-            </button>
-          </div>
         </div>
+
+        {/* Background image illustration */}
+        <div className="background-illustration lg:block hidden"
+          style={{
+            width: "450px",
+            height: "450px",
+            opacity: 1,
+          }}
+        >
+          <img
+            src="/images/Illustration.svg"
+            alt="Illustration"
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </div>
+
       </div>
 
-      {/* Background image logo */}
-      <div
-        style={{
-          position: "absolute",
-          top: "280px",
-          left: "342px",
-          width: "200px",
-          height: "auto",
-          opacity: 100,
-        }}
-      >
-        <img
-          src="/images/bct_small.svg"
-          alt="bct_small"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-      </div>
+
     </div>
   );
 }

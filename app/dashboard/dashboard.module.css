@@ -1,6 +1,6 @@
 /* Main container for the dashboard */
 .dashboardContainer {
-  display: flex;
+  /* display: flex; */
   height: 100vh;
   /* Ensures the dashboard takes full height */
 }
@@ -8,7 +8,7 @@
 /* Sidebar styles */
 .sidebar {
   width: 260px;
-  background-color: #1C2546;
+  background-color: #1c2546;
   padding-top: 20px;
 }
 
@@ -18,10 +18,15 @@
   background-color: #13182c;
   padding: 20px;
   overflow-y: auto;
-  width: -webkit-fill-available;
   margin-left: 80px;
-  transition: margin-left 0.3s ease, width 0.3s ease;
 }
+
+@media(max-width: 1024px) {
+  .mainContent {
+    margin-left: 0px;
+  }
+}
+
 
 .sidebarActive {
   flex-grow: 1;
@@ -32,30 +37,41 @@
   margin-left: 260px;
 }
 
-/* Header section of the dashboard */
-.pageContent {
-  margin-top: 20px;
+@media (max-width: 1024px) {
+  .sidebarActive {
+    margin-left: 0px;
+  }
 }
 
-/* Main dashboard section with title */
-.mainDashboard {
-  margin-bottom: 40px;
+/* Header section of the dashboard   */
+.pageContent {
+  margin-top: 0px;
 }
+
+@media (max-width: 1140px) {
+  .pageContent {
+    margin-top: 80px;
+  }
+}
+
+
+/* Main dashboard section with title */
+/* .mainDashboard {
+  margin-bottom: 40px;
+} */
 
 .dashboardTitle {
   color: white;
-  font-family: 'Be Vietnam Pro', sans-serif;
+  font-family: "Be Vietnam Pro", serif;
   font-size: 36px;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 /* Statistics container holding the stats cards */
 .statsContainer {
-  display: flex;
-  justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 /* Individual stats cards */
@@ -79,18 +95,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #5177FF;
+  background: #5177ff;
 }
 
 /* Stats labels and values */
 .statsText {
   display: flex;
   flex-direction: column;
-  color: #5177FF;
+  color: #5177ff;
 }
 
 .statsLabel {
-  color: #A3AED0;
+  color: #a3aed0;
   font-size: 14px;
   font-weight: 500;
 }
@@ -103,17 +119,16 @@
 
 /* Chart containers */
 .chartsContainer {
-  display: flex;
-  justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
+
 
 /* Individual chart box */
 .chart {
   width: -webkit-fill-available;
   padding: 20px;
-  background: #1C2546;
+  background: #1c2546;
   border-radius: 20px;
 }
 
@@ -126,12 +141,12 @@
 
 /* Table section */
 .tableSection {
-  margin-top: 40px;
+  margin-top: 20px;
 }
 
 /* Table container */
 .tableContainer {
-  background: #1C2546;
+  background: #1c2546;
   border-radius: 20px;
   padding: 20px;
   overflow-x: auto;
@@ -154,7 +169,7 @@
 
 .tableHeader {
   text-align: left;
-  color: #A3AED0;
+  color: #a3aed0;
   font-size: 14px;
   font-weight: 500;
   text-transform: uppercase;
@@ -173,19 +188,45 @@
 
 /* Status indicators for table rows */
 .statusActive {
-  color: #4CCE82;
+  color: #4cce82;
 }
 
 .statusHold {
-  color: #5177FF;
+  color: #5177ff;
 }
 
 .statusNotActive {
-  color: #FC5454;
+  color: #fc5454;
 }
 
 /* Action icons for the table rows */
 .actionIcons {
   display: flex;
   gap: 14px;
+}
+
+
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #0f172a;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #1e293b;
+}
+
+.icon {
+  width: 1rem;
+  height: 1rem;
 }

@@ -2,22 +2,27 @@
     display: flex;
 }
 
-.mainContent {
+
+
+.sidebarActive {
+    flex-grow: 1;
     background-color: #13182c;
-    height: max-content;
-    transition: margin-left 0.3s ease, width 0.3s ease;
-  }
-  
-  .mainContent.expanded {
-    margin-left: 260px; /* Full sidebar width */
-    width: calc(100% - 260px);
-  }
-  
-  .mainContent.collapsed {
-    margin-left: 80px; /* Collapsed sidebar width */
-    width: calc(100% - 80px);
-  }
-  
+    padding: 10px;
+    overflow-y: auto;
+    width: -webkit-fill-available;
+    margin-left: 260px;
+    padding-bottom: 0;
+    height: 100vh;
+
+}
+
+@media (max-width: 1024px) {
+    .sidebarActive {
+        margin-left: 0px;
+    }
+}
+
+
 
 .title {
     border-radius: 18px;
@@ -40,7 +45,7 @@
     margin-bottom: 15px;
 }
 
-.inputField{
+.inputField {
     display: block;
     width: -webkit-fill-available;
 }
@@ -163,17 +168,17 @@
     display: flex;
 }
 
-.selectedGroupName {
+.selectGroupName {
     display: flex;
 }
 
-.selectedGroupName ul {
+.selectGroupName ul {
     display: flex;
     align-items: flex-start;
     gap: 10px;
 }
 
-.selectedGroupName li {
+.selectGroupName li {
     display: flex;
     font-size: 14px;
     font-weight: lighter;
@@ -343,7 +348,8 @@
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    padding-top: 10px; padding-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .btn:hover {
@@ -357,4 +363,40 @@
     margin-right: 10px;
 }
 
+.successMessage {
+    color: green;
+    margin-top: 10px;
+}
 
+.error {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* Header section of the dashboard   */
+.pageContent {
+    margin-top: 0px;
+}
+
+@media (max-width: 1140px) {
+    .pageContent {
+        margin-top: 80px;
+    }
+}
+
+/* Main content area */
+.mainContent {
+    flex-grow: 1;
+    background-color: #13182c;
+    padding: 20px;
+    overflow-y: auto;
+    margin-left: 80px;
+}
+
+
+@media(max-width: 1024px) {
+    .mainContent {
+        margin-left: 0px;
+    }
+}
