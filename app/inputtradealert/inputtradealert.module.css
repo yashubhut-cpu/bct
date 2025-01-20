@@ -364,8 +364,35 @@
 }
 
 .successMessage {
-    color: green;
+    color: white;
+    background-color: green;
+    border: 1px solid darkgreen;
+    padding: 15px;
     margin-top: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    text-align: center;
+    max-width: 300px;
+    width: 80%;
+    animation: fadeOut 3s forwards; /* Animates over 3 seconds */
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
 .error {

@@ -44,7 +44,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     document.title = "Dashboard" ;
-  
+    if (localStorage.getItem("accessToken")) {
+      router.push('/dashboard')
+    } else {
+      router.push('/')
+    }
 
   }, 
   [router]);

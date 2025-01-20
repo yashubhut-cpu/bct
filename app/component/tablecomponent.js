@@ -4,6 +4,7 @@ import DocumentIcon from "./DocumentIcon";
 import SlidingPanel from "./SlidingPanel"; // Import the SlidingPanel component
 import React, { useState } from 'react';
 import styles from './table.module.css';
+import GroupSliding from "./GroupSliding";
 
 const Checkbox = ({ id, checked, onChange }) => {
   return (
@@ -15,11 +16,15 @@ const Checkbox = ({ id, checked, onChange }) => {
 };
 
 const DateTime = ({ date_time }) => {
-  return (
+  return (  
     <div className="flex items-center">
       <span>{date_time}</span>
     </div>
   );
+};
+const handleDeleteClick = (id) => {
+  console.log("Deleting row with ID:", id);
+  // Implement your delete logic here
 };
 
 function formatDateToDDMMYYYY(isoDate) {
@@ -32,7 +37,7 @@ function formatDateToDDMMYYYY(isoDate) {
 
 const TableRow = ({
   id, title, date_time, trade_details, distribution_channel, groupName, editor_name, error_type, description, name, email, role, assignedGroups,
-  assignedEditors, ticker, entryPrice, exitPrice, affected_channel, status, createdDate, date, visibleColumns, checked, onChange, onEditClick
+  assignedEditors, ticker, entryPrice, exitPrice, affected_channel, status, createdDate, date, visibleColumns, checked, onChange, onEditClick, onDeleteClick 
 }) => {
   const getStatusIcon = () => {
     switch (status) {
@@ -126,14 +131,15 @@ const TableRow = ({
                 <EyeIcon className="w-5 h-5 cursor-pointer text-[#5177FF] hover:text-[#5177FF]" />
               </div>
             )}
-            {visibleColumns.includes("edit") && (
+            {visibleColumns.includes("edit") &&  (
               <div className="column">
-                <PencilIcon className="w-5 h-5 cursor-pointer text-green-400 hover:text-green-500" onClick={() => onEditClick(id)} />
+                <PencilIcon className="w-5 h-5 cursor-pointer text-green-400 hover:text-green-500" onClick={() => onEditClick(id)} /> 
+
               </div>
             )}
             {visibleColumns.includes("delete") && (
               <div className="column">
-                <TrashIcon className="w-5 h-5 cursor-pointer text-red-400 hover:text-red-500" />
+                <TrashIcon className="w-5 h-5 cursor-pointer text-red-400 hover:text-red-500" onClick={() => onDeleteClick(id)} />
               </div>
             )}
           </div>
@@ -213,7 +219,7 @@ const Table = ({ alerts, visibleColumns }) => {
           {alerts.map((alert, index) => (
             <TableRow
               key={index}
-              id={alert.id}
+              id={index}
               checked={rowChecked[index]}
               onChange={() => handleRowChange(index)}
               title={alert.title}
@@ -237,9 +243,10 @@ const Table = ({ alerts, visibleColumns }) => {
               status={alert.is_active}
               date={alert.date}
               visibleColumns={visibleColumns}
-              onEditClick={(id) => handleEditClick(id, alert)} // Pass the full row data here
+              onEditClick={(id) => handleEditClick(id)} 
+              onDeleteClick={(id) => handleDeleteClick(id)}// Pass the full row data here
             />
-          ))}
+          ))} 
         </tbody>
       </table>
 

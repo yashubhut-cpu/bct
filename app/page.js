@@ -64,6 +64,9 @@ export default function Home() {
     } catch (error) {
       console.error("Error during login:", error);
   
+
+
+      
       // Check if refresh token exists and is expired
       const refreshToken = localStorage.getItem("refreshToken");
       if (refreshToken) {
@@ -105,14 +108,6 @@ export default function Home() {
       }
     }
   };
-  
-
-
-
-
-
-
-
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 

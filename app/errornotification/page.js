@@ -29,7 +29,11 @@ export default function Errornotification() {
 
   useEffect(() => {
     document.title = "Error Notification";
-  
+    if (localStorage.getItem("accessToken")) {
+      router.push('/errornotification')
+    } else {
+      router.push('/')
+    }
   }, [router]);
 
   const alerts = [{

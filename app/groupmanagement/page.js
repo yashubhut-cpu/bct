@@ -13,8 +13,7 @@ import SlidingPanel from "../component/SlidingPanel"; // Import reusable Sliding
 import Select from "react-select";
 import { useRouter } from 'next/navigation';
 import Header from "../component/Header/header";
-import { del, get, post, put } from "../api/base";
-
+import { del, get, post, put } from "../api/base";  
 
 export default function Groupmanagement() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -28,7 +27,11 @@ export default function Groupmanagement() {
 
   useEffect(() => {
     document.title = "Group Management";
-    
+    if (localStorage.getItem("accessToken")) {
+      router.push('/groupmanagement')
+    } else {
+      router.push('/')
+    }
   }, [router]);
 
   const [isSidebarActive, setIsSidebarActive] = useState(false);
@@ -224,7 +227,7 @@ export default function Groupmanagement() {
     }
   }
 
-  const handleRemove = async (e) => {
+  const handleDeleteClick = async (e) => {
     e.preventDefault();
 
     let id = 'a33299d1-cfab-4f5e-b070-32c69b517dda';
@@ -290,6 +293,7 @@ export default function Groupmanagement() {
                 <div className={styles.tableContainer + " scrollbar"} id="style-2">
                   <div className={styles.tableContent + " force-overflow p-4 pt-0"}>
                     <Table alerts={groupData} visibleColumns={columnsConfig.groupmanagement} />
+                    
                   </div>
                 </div>
               </div>
@@ -461,16 +465,21 @@ export default function Groupmanagement() {
               </div>
 
               {/* Submit Button and Clear Button */}
-              <div className="mb-4 mt-4 flex justify-start space-x-4">
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
-                >
-                  Submit & Save
-                </button>
+                      <div className="mb-4 mt-4 flex justify-start space-x-4">
+                      {/* Submit Button */}
+                      <button
+                        type="submit"
+                        className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
+                      >
+                        Submit & Save
+                      </button>
 
-                {/* Clear Button */}
+                      {/* Success Message */}
+                      {Object.keys(errors).length === 0 && (
+                        <span className={styles.successMessage}>Group Saved successfully</span>
+                      )}
+
+                      {/* Clear Button */}
                 <button
                   type="button"
                   className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"

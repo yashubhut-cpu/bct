@@ -128,12 +128,11 @@ export default function InputTradeAlert() {
 
   useEffect(() => {
     document.title = "Input Trade Alert";
-
-    // if (localStorage.getItem("accessToken")) {
-    //   router.push('/inputtradealert')
-    // } else {
-    //   router.push('/')
-    // }
+    if (localStorage.getItem("accessToken")) {
+      router.push('/inputtradealert')
+    } else {
+      router.push('/')
+    }
   }, [router]);
 
 

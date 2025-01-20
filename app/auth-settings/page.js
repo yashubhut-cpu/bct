@@ -8,13 +8,13 @@ import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
 import Sidebar from "../component/Sidebar/sidebar";
 import { useRouter } from 'next/navigation';
 import Header from "../component/Header/header";
-
+import { get, post } from "../api/base"
 
 export default function AuthSettings() {
-    const [keepClientId, setKeepClientId] = useState('Basecore_noahg23')
-    const [keepClientSecret, setKeepClientSecret] = useState('ubc52445Y2590bh4hOFQBSvvvY2ubc52445Y2590bh4hOFQBSvvvY2')
-    const [highLevelClientId, setHighLevelClientId] = useState('Basecore_noahg222')
-    const [highLevelClientSecret, setHighLevelClientSecret] = useState('9e8f7b65b64d3a2f9b2b54969fbbop9e8f7b65b64d3a2f9b2b54969fbbop')
+    const [keepClientId, setKeepClientId] = useState('')
+    const [keepClientSecret, setKeepClientSecret] = useState('')
+    const [highLevelClientId, setHighLevelClientId] = useState('')
+    const [highLevelClientSecret, setHighLevelClientSecret] = useState('')
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
     const handleSidebarToggle = () => {
         setSidebarCollapsed(!isSidebarCollapsed);
@@ -34,9 +34,37 @@ export default function AuthSettings() {
 
     useEffect(() => {
         document.title = "Auth-Settings";
-       
+        if (localStorage.getItem("accessToken")) {
+            router.push('/auth-settings')
+        } else {
+            router.push('/')
+        }
     }, [router]);
 
+    useEffect(() => {
+        console.log("@!#!@#@!#@!")
+        fetch_platform_config();
+    }, [])
+
+
+    const fetch_platform_config = async () => {
+        const response = await get('/authentication_settings/list_platform_config/');
+        console.log("response :: ", response.data)
+        if (response && response.data) {
+            const keapConfig = response.data.find(config => config.platform_name === 'keap');
+            const highLevelConfig = response.data.find(config => config.platform_name === 'go_high_level');
+
+            if (keapConfig) {
+                setKeepClientId(keapConfig.client_id || '');
+                setKeepClientSecret(keapConfig.client_secret || '');
+            }
+            if (highLevelConfig) {
+                setHighLevelClientId(highLevelConfig.client_id || '');
+                setHighLevelClientSecret(highLevelConfig.client_secret || '');
+            }
+        }
+
+    };
 
     const [isSidebarActive, setIsSidebarActive] = useState(false);
     const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
@@ -47,59 +75,6 @@ export default function AuthSettings() {
     }
 
     const toggleMobileSidebar = () => setIsMobileSidebarActive(!isMobileSidebarActive);
-
-
-
-
-
-
-    // Fetch data from the API when the component mounts
-    useEffect(() => {
-        fetch('https://bct-trade-alert-backend-production.up.railway.app/authentication_settings/list_platform_config/')
-            .then(response => response.json())
-            .then(data => {
-                setKeepClientId(data.keepClientId);
-                setKeepClientSecret(data.keepClientSecret);
-                setHighLevelClientId(data.highLevelClientId);
-                setHighLevelClientSecret(data.highLevelClientSecret);
-            })
-            .catch(error => console.error('Error fetching data:', error));
-    }, []);
-
-    // Function to handle saving data
-    const handleSave = () => {
-        const data = {
-            platform_name: "keap",
-            client_id: "client_id",
-            client_secret: "client_secret"
-        };
-
-        fetch('https://bct-trade-alert-backend-production.up.railway.app/authentication_settings/create_update_platform_config/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzM2MzA5NTkzLCJpYXQiOjE3MzUyOTczNDcsImp0aSI6IjlmMGNhNmM1MThiMDQzYmY5MDUyOGZmMzM1OWE2YTI0IiwidXNlcl9pZCI6Ijk3NDQ2NGMxLWFjYjAtNDM4Mi1iNGQ2LTRjMGZmNWNlYjM1YiJ9.ZoFZksWwXlfPEnJWvPFC7-JXZmFtLbur0NiNLzZSEWo', // Replace with the actual token
-            },
-            body: JSON.stringify(data),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    return response.json().then((error) => {
-                        console.error('API Error:', error);
-                        alert('Failed to save data: ' + JSON.stringify(error));
-                    });
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log('Success:', data);
-                alert('Data saved successfully!');
-            })
-            .catch((error) => console.error('Network Error:', error));
-    };
-
-
-
 
     return (
         <div className={styles.dashboardContainer}>
@@ -147,7 +122,7 @@ export default function AuthSettings() {
                             </div>
 
                             <div className={styles.buttonGroup}>
-                                <button className={styles.saveButton} onClick={handleSave}>Save</button>
+                                <button className={styles.saveButton}>Save</button>
                                 <button className={styles.testButton}>
                                     <span className={styles.testIcon}>⚡</span>
                                     Test Connection
@@ -186,7 +161,7 @@ export default function AuthSettings() {
                             </div>
 
                             <div className={styles.buttonGroup}>
-                                <button className={styles.saveButton} onClick={handleSave}>Save</button>
+                                <button className={styles.saveButton} >Save</button>
                                 <button className={styles.testButton}>
                                     <span className={styles.testIcon}>⚡</span>
                                     Test Connection

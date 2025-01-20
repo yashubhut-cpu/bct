@@ -5,7 +5,7 @@ import styles from "../usermanagement/styles.module.css"; // Correctly import th
 import Sidebar from "../component/Sidebar/sidebar";
 import Table from "../component/tablecomponent"; // Import the Table component
 import columnsConfig from "../columnsConfig"; // Import the columnsConfig
-import { ChevronRight } from "lucide-react";
+import { ChevronRight,ChevronLeft } from "lucide-react";
 import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
 import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
 import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
@@ -23,7 +23,9 @@ export default function Usermanagement() {
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [active, setActive] = useState(false);
-
+  const [page, setPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1); // Default to 1 to prevent errors
   const handleToggle = () => {
     setActive((prev) => {
       const newActive = !prev;
@@ -57,12 +59,36 @@ export default function Usermanagement() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const response = await get('/user_management/user_management_list/');
-      setUsers(response.data?.users);
+      try {
+        const response = await get('/user_management/user_management_list/', { page, page_size: itemsPerPage });
+        setUsers(response.data?.users);
+        setTotalPages(response?.data?.total_pages || 1); 
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setTotalPages(1); 
+      }
     };
     fetchUsers();
+  }, [page, itemsPerPage]);
 
-  }, []);
+       
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
 
   useEffect(() => {
     async function fetchGroups() {
@@ -79,6 +105,7 @@ export default function Usermanagement() {
       }
     }
 
+    
     fetchGroups();
   }, []);
 
@@ -94,7 +121,11 @@ export default function Usermanagement() {
 
   useEffect(() => {
     document.title = "User Management";
-   
+    if (localStorage.getItem("accessToken")) {
+      router.push('/usermanagement')
+    } else {
+      router.push('/')
+    }
   }, [router]);
 
   const [errors, setErrors] = useState({
@@ -288,13 +319,21 @@ export default function Usermanagement() {
     }
   }
 
-  const handleRemove = async (e) => {
+  const handleRemove = async (e,id) => {
     e.preventDefault();
-   
-    let id='a33299d1-cfab-4f5e-b070-32c69b517dda';
+
+    const payload = {
+      first_name,
+      last_name,
+      email: formValues.email,
+      is_active: active,
+      role: formValues.Role,
+      group_editors_assignment: selectedGroups,
+    };
 
     try {
-      const response = await del(`/user_management/delete_user_management/${id}`, payload);
+      const response = await del(`/user_management/delete_user_management/${id}`,payload);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
       console.log(response);
     } catch (error) {
       console.error('Error delete user:', error);
@@ -335,7 +374,7 @@ export default function Usermanagement() {
               <div className={styles.tableSection}>
                 <div className={styles.tableContainer + " scrollbar"} id="style-2">
                   <div className={styles.tableContent + " force-overflow p-4 pt-0"}>
-                    <Table alerts={users} visibleColumns={columnsConfig.usermanagement} onEditClick={(id) => handleEditClick(id)} />
+                    <Table alerts={users} visibleColumns={columnsConfig.usermanagement} onEditClick={(id) => handleEditClick(id)} onDeleteClick={(id)=>handleRemove(id)} />
                   </div>
                 </div>
               </div>
@@ -344,15 +383,26 @@ export default function Usermanagement() {
               {/* Pagination Section */}
               <div className={styles.pagination + " p-4"}>
                 <button
-                  className={`${styles.paginationButton} ${styles.active}`}
+                  className={styles.paginationButton}
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
                 >
-                  1
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-                <button className={styles.paginationButton}>2</button>
-                <button className={styles.paginationButton}>3</button>
-                <button className={styles.paginationButton}>...</button>
-                <button className={styles.paginationButton}>80</button>
-                <button className={styles.paginationButton}>
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <button
+                    key={index}
+                    className={`${styles.paginationButton} ${page === index + 1 ? styles.active : ""}`}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -522,13 +572,16 @@ export default function Usermanagement() {
                   type="button"
                   className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"
                   onClick={() => {
-                    setFormValues({
+                    setFormValues((prevValues) => ({
+                      ...prevValues, // Retain all previous values
                       UserName: "",
                       email: "",
                       Password: "",
                       Role: "",
-                      status: "",
-                    });
+                      selectedGroups: [],
+                      status: prevValues.status === "active" ? "clear" : "active", // Toggle status
+                    }));
+  
                     setErrors({});
                   }}
                 >

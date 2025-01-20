@@ -181,7 +181,11 @@ const toggleMobileSidebar = () => setIsMobileSidebarActive(!isMobileSidebarActiv
 
   useEffect(() => {
     document.title = "Logs & Reports";
-    
+    if (localStorage.getItem("accessToken")) {
+      router.push('/logs&report')
+    } else {
+      router.push('/')
+    }
   }, [router]);
 
 

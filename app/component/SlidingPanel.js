@@ -23,7 +23,7 @@ const SlidingPanel = ({ isOpen, onClose, children }) => {
         >
           ✕ {/* Unicode character for "X" */}
         </button>
-
+ 
         {/* Panel Content */}
         <div className="p-6">
           {children}
