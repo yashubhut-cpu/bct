@@ -4,7 +4,6 @@ import DocumentIcon from "./DocumentIcon";
 import SlidingPanel from "./SlidingPanel"; // Import the SlidingPanel component
 import React, { useState } from 'react';
 import styles from './table.module.css';
-import GroupSliding from "./GroupSliding";
 
 const Checkbox = ({ id, checked, onChange }) => {
   return (
@@ -22,10 +21,7 @@ const DateTime = ({ date_time }) => {
     </div>
   );
 };
-const handleDeleteClick = (id) => {
-  console.log("Deleting row with ID:", id);
-  // Implement your delete logic here
-};
+
 
 function formatDateToDDMMYYYY(isoDate) {
   const date = new Date(isoDate);
@@ -37,7 +33,7 @@ function formatDateToDDMMYYYY(isoDate) {
 
 const TableRow = ({
   id, title, date_time, trade_details, distribution_channel, groupName, editor_name, error_type, description, name, email, role, assignedGroups,
-  assignedEditors, ticker, entryPrice, exitPrice, affected_channel, status, createdDate, date, visibleColumns, checked, onChange, onEditClick, onDeleteClick 
+  assignedEditors, ticker, entryPrice, exitPrice, affected_channel, status, createdDate, date, visibleColumns, checked, onChange, onEditClick, onDeleteClick, apiID 
 }) => {
   const getStatusIcon = () => {
     switch (status) {
@@ -133,13 +129,13 @@ const TableRow = ({
             )}
             {visibleColumns.includes("edit") &&  (
               <div className="column">
-                <PencilIcon className="w-5 h-5 cursor-pointer text-green-400 hover:text-green-500" onClick={() => onEditClick(id)} /> 
+                <PencilIcon className="w-5 h-5 cursor-pointer text-green-400 hover:text-green-500" onClick={() => onEditClick(apiID)} /> 
 
               </div>
             )}
             {visibleColumns.includes("delete") && (
               <div className="column">
-                <TrashIcon className="w-5 h-5 cursor-pointer text-red-400 hover:text-red-500" onClick={() => onDeleteClick(id)} />
+                <TrashIcon className="w-5 h-5 cursor-pointer text-red-400 hover:text-red-500" onClick={() => onDeleteClick(apiID)} />
               </div>
             )}
           </div>
@@ -167,9 +163,12 @@ const Table = ({ alerts, visibleColumns }) => {
     setRowChecked(updatedRowChecked);
     setAllChecked(updatedRowChecked.every((isChecked) => isChecked));
   };
-
-  const handleEditClick = (id, rowData) => {
-    console.log("Editing row with ID:", id); // Debugging to verify the ID
+  const handleDeleteClick = (apiID) => {
+    console.log("Deleting row with ID:", apiID);
+// write logic here
+  };
+  const handleEditClick = (apiID, rowData) => {
+    console.log("Editing row with ID:", apiID); // Debugging to verify the ID
     setIsPanelOpen(true);
     setSelectedRowData(rowData); // Store the row data
   };
@@ -243,8 +242,9 @@ const Table = ({ alerts, visibleColumns }) => {
               status={alert.is_active}
               date={alert.date}
               visibleColumns={visibleColumns}
-              onEditClick={(id) => handleEditClick(id)} 
-              onDeleteClick={(id) => handleDeleteClick(id)}// Pass the full row data here
+              apiID = {alert.id}
+              onEditClick={(apiID) => handleEditClick(apiID,alert)} 
+              onDeleteClick={(apiID) => handleDeleteClick(apiID)}// Pass the full row data here
             />
           ))} 
         </tbody>
