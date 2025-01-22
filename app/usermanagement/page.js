@@ -1,31 +1,40 @@
 "use client";
 import { useState, useEffect } from "react";
 import React from "react";
-import styles from "../usermanagement/styles.module.css"; // Correctly import the CSS module here
+import styles from "../usermanagement/styles.module.css";
 import Sidebar from "../component/Sidebar/sidebar";
-import Table from "../component/tablecomponent"; // Import the Table component
-import columnsConfig from "../columnsConfig"; // Import the columnsConfig
-import { ChevronRight,ChevronLeft } from "lucide-react";
-import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
-import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
-import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
-import SlidingPanel from "../component/SlidingPanel"; // Import reusable SlidingPanel
+import Table from "../component/Table";
+import columnsConfig from "../columnsConfig";
+import { ChevronRight, ChevronLeft } from "lucide-react";
+import "@fontsource/be-vietnam-pro";
+import "@fontsource/be-vietnam-pro/400.css";
+import "@fontsource/be-vietnam-pro/400-italic.css";
+import SlidingPanel from "../component/SlidingPanel";
 import Select from "react-select";
 import { del, get, post, put } from "../api/base";
 import { useRouter } from "next/navigation";
 import Header from "../component/Header/header";
 
-
 export default function Usermanagement() {
-
   const [users, setUsers] = useState([]);
+  const [editingUser, setEditingUser] = useState(null);
   const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [active, setActive] = useState(false);
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [totalPages, setTotalPages] = useState(1); // Default to 1 to prevent errors
+  const [totalPages, setTotalPages] = useState(1);
+  const [formValues, setFormValues] = useState({
+    UserName: "",
+    email: "",
+    Password: "",
+    status: active ? "true" : "false",
+    Role: "",
+  });
+  const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+
   const handleToggle = () => {
     setActive((prev) => {
       const newActive = !prev;
@@ -39,39 +48,29 @@ export default function Usermanagement() {
   };
 
 
-  const [formValues, setFormValues] = useState({
-    UserName: "",
-    email: "",
-    Password: "",
-    status: active ? "true" : "false",
-    Role: "",
-  });
-
-  const [isSidebarActive, setIsSidebarActive] = useState(false);
-  const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
-
-  // Toggle the sidebar collapse state
   const toggleSidebar = () => {
-    setIsSidebarActive(!isSidebarActive); // Toggle the state
-  }
+    setIsSidebarActive(!isSidebarActive);
+  };
 
-  const toggleMobileSidebar = () => setIsMobileSidebarActive(!isMobileSidebarActive);
+  const toggleMobileSidebar = () =>
+    setIsMobileSidebarActive(!isMobileSidebarActive);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await get('/user_management/user_management_list/', { page, page_size: itemsPerPage });
+        const response = await get("/user_management/user_management_list/", {
+          page,
+          page_size: itemsPerPage,
+        });
         setUsers(response.data?.users);
-        setTotalPages(response?.data?.total_pages || 1); 
+        setTotalPages(response?.data?.total_pages || 1);
       } catch (error) {
         console.error("Error fetching users:", error);
-        setTotalPages(1); 
+        setTotalPages(1);
       }
     };
     fetchUsers();
   }, [page, itemsPerPage]);
-
-       
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) {
@@ -79,21 +78,10 @@ export default function Usermanagement() {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
   useEffect(() => {
     async function fetchGroups() {
       try {
-        const response = await get('/user_management/group_list/');
+        const response = await get("/user_management/group_list/");
         setGroups(
           response.data.map((group) => ({
             value: group.id,
@@ -101,20 +89,40 @@ export default function Usermanagement() {
           }))
         );
       } catch (error) {
-        console.error('Error fetching groups:', error);
+        console.error("Error fetching groups:", error);
       }
     }
 
-    
+    togglePanel();
     fetchGroups();
   }, []);
 
-  useEffect(() =>{
+  useEffect(() => {
     setIsPanelOpen(isPanelOpen);
-  }, [isPanelOpen])
+  }, [isPanelOpen]);
 
-  const togglePanel = () => { 
+  const togglePanel = (rowData = null) => {
     setIsPanelOpen(!isPanelOpen);
+    if (rowData) {
+      setEditingUser(rowData);
+
+      setFormValues({
+        UserName: rowData.first_name + " " + rowData.last_name,
+        email: rowData.email,
+        Role: rowData.role,
+        selectedGroups: rowData.group_editors_assignment.map((group) => 
+          ({value: group.id, label: `${group.group_name}`})),
+      });
+    } else {
+      setEditingUser(null);
+      setFormValues({
+        UserName: "",
+        email: "",
+        Role: "",
+        selectedGroups: [],
+      });
+      setIsPanelOpen(true); 
+    }
   };
 
   const router = useRouter(); // Initialize the router
@@ -122,9 +130,9 @@ export default function Usermanagement() {
   useEffect(() => {
     document.title = "User Management";
     if (localStorage.getItem("accessToken")) {
-      router.push('/usermanagement')
+      router.push("/usermanagement");
     } else {
-      router.push('/')
+      router.push("/");
     }
   }, [router]);
 
@@ -135,31 +143,7 @@ export default function Usermanagement() {
     Role: "",
     selectedGroups: "",
   });
-
-  // const handleEditorChange = (select) => {
-  //   setFormValues((prevFormValues) => ({
-  //     ...prevFormValues,
-  //     assignedGroups: select ? select.map((item) => item.label) : [], // Update assignedGroups
-  //   }));
-
-  //   setSelectedGroups(select);
-
-  //   setErrors((prevErrors) => ({
-  //     ...prevErrors,
-  //     assignedGroups:
-  //       select && select.length > 0
-  //         ? "" // No error if something is selected
-  //         : "At least one group must be selected.", // Error message when nothing is selected
-  //   }));
-  // };
-
-  // const groups = [
-  //   { value: "group1", label: "Group 1 name here" },
-  //   { value: "group2", label: "Group 2 name here" },
-  //   { value: "group3", label: "Group 3 name here" },
-  //   { value: "group4", label: "Group 4 name here" },
-  // ];
-
+  
   const customStyles = {
     clearIndicator: (provided) => ({
       ...provided,
@@ -229,20 +213,22 @@ export default function Usermanagement() {
     setErrors((prevErrors) => ({
       ...prevErrors,
       [id]: value ? "" : "This field is required.",
-    }
-  ));
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
     Object.keys(formValues).forEach((key) => {
-      if (!formValues[key] || (Array.isArray(formValues[key]) && formValues[key].length === 0)) {
+      if (
+        !formValues[key] ||
+        (Array.isArray(formValues[key]) && formValues[key].length === 0)
+      ) {
         newErrors[key] = "This field is required.";
       }
     });
-    if(selectedGroups.length <= 0){
-      newErrors.selectedGroups = "This field is requires."
+    if (selectedGroups.length <= 0) {
+      newErrors.selectedGroups = "This field is requires.";
     }
     setErrors(newErrors);
 
@@ -252,12 +238,12 @@ export default function Usermanagement() {
     if (!first_name || !last_name) {
       setErrors((prevErrors) => ({
         ...prevErrors,
-        UserName: "Please provide both first and last names separated by a space.",
+        UserName:
+          "Please provide both first and last names separated by a space.",
       }));
       return;
     }
 
-    
     const payload = {
       first_name,
       last_name,
@@ -269,12 +255,14 @@ export default function Usermanagement() {
 
     console.log("Payload", payload);
 
-
     try {
-      const response = await post('/user_management/create_user_management/', payload);
+      const response = await post(
+        "/user_management/create_user_management/",
+        payload
+      );
       console.log(response);
     } catch (error) {
-      console.error('Error creating user:', error);
+      console.error("Error creating user:", error);
     }
   };
 
@@ -282,7 +270,10 @@ export default function Usermanagement() {
     e.preventDefault();
     const newErrors = {};
     Object.keys(formValues).forEach((key) => {
-      if (!formValues[key] || (Array.isArray(formValues[key]) && formValues[key].length === 0)) {
+      if (
+        !formValues[key] ||
+        (Array.isArray(formValues[key]) && formValues[key].length === 0)
+      ) {
         newErrors[key] = "This field is required.";
       }
     });
@@ -294,13 +285,14 @@ export default function Usermanagement() {
     if (!first_name || !last_name) {
       setErrors((prevErrors) => ({
         ...prevErrors,
-        UserName: "Please provide both first and last names separated by a space.",
+        UserName:
+          "Please provide both first and last names separated by a space.",
       }));
       return;
     }
 
-    let id='a33299d1-cfab-4f5e-b070-32c69b517dda';
-    
+    let id = "a33299d1-cfab-4f5e-b070-32c69b517dda";
+
     const payload = {
       first_name,
       last_name,
@@ -312,14 +304,17 @@ export default function Usermanagement() {
 
     console.log("Payload", payload);
     try {
-      const response = await put(`/user_management/update_user_management/${id}`, payload);
+      const response = await put(
+        `/user_management/update_user_management/${id}`,
+        payload
+      );
       console.log(response);
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error("Error updating user:", error);
     }
-  }
+  };
 
-  const handleRemove = async (e,id) => {
+  const handleRemove = async (e, id) => {
     e.preventDefault();
 
     const payload = {
@@ -332,37 +327,49 @@ export default function Usermanagement() {
     };
 
     try {
-      const response = await del(`/user_management/delete_user_management/${id}`,payload);
+      const response = await del(
+        `/user_management/delete_user_management/${id}/`,
+        payload
+      );
       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
       console.log(response);
     } catch (error) {
-      console.error('Error delete user:', error);
+      console.error("Error delete user:", error);
     }
-  }
+  };
 
-  const handleEditClick = async(e) =>{
-    console.log(e)
+  const handleEditClick = (id, rowData) => {
+    setEditingUser(rowData);
+    setFormValues({
+      UserName: rowData.first_name + " " + rowData.last_name,
+      email: rowData.email,
+      Role: rowData.role,
+      selectedGroups: rowData.group_editors_assignment,
+    });
     setIsPanelOpen(!isPanelOpen);
-    console.log(isPanelOpen)
-  }
-  
+  };
+
   return (
     <div className={styles.dashboardContainer}>
-
-      <Sidebar isCollapsed={isSidebarActive} toggleSidebar={toggleSidebar} isMobileActive={isMobileSidebarActive} />
+      <Sidebar
+        isCollapsed={isSidebarActive}
+        toggleSidebar={toggleSidebar}
+        isMobileActive={isMobileSidebarActive}
+      />
       {/* Conditionally applying the class for main content */}
       <Header toggleSidebar={toggleMobileSidebar} />
       <div
-        className={`${isSidebarActive ? styles.mainContent : styles.sidebarActive}`}
+        className={`${
+          isSidebarActive ? styles.mainContent : styles.sidebarActive
+        }`}
       >
         <div className={styles.pageContent}>
-
           {/* Group Management Section */}
           <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
             <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
               User Management
             </h2>
-            <button className={styles.pageButton} onClick={togglePanel}>
+            <button className={styles.pageButton} onClick={()=>togglePanel()}>
               <img src="/images/add_user.svg" alt="Add Group Icon" />
               Add New User
             </button>
@@ -372,9 +379,19 @@ export default function Usermanagement() {
           <div className="mx-2 mb-4">
             <div className="bg-[#1C2546] rounded-[20px] shadow relative">
               <div className={styles.tableSection}>
-                <div className={styles.tableContainer + " scrollbar"} id="style-2">
-                  <div className={styles.tableContent + " force-overflow p-4 pt-0"}>
-                    <Table alerts={users} visibleColumns={columnsConfig.usermanagement} onEditClick={(id) => handleEditClick(id)} onDeleteClick={(id)=>handleRemove(id)} />
+                <div
+                  className={styles.tableContainer + " scrollbar"}
+                  id="style-2"
+                >
+                  <div
+                    className={styles.tableContent + " force-overflow p-4 pt-0"}
+                  >
+                    <Table
+                      alerts={users}
+                      visibleColumns={columnsConfig.usermanagement}
+                      onEditClick={handleEditClick}
+                      onDeleteClick={(id) => handleRemove(id)}
+                    />
                   </div>
                 </div>
               </div>
@@ -392,7 +409,9 @@ export default function Usermanagement() {
                 {Array.from({ length: totalPages }, (_, index) => (
                   <button
                     key={index}
-                    className={`${styles.paginationButton} ${page === index + 1 ? styles.active : ""}`}
+                    className={`${styles.paginationButton} ${
+                      page === index + 1 ? styles.active : ""
+                    }`}
                     onClick={() => handlePageChange(index + 1)}
                   >
                     {index + 1}
@@ -410,8 +429,6 @@ export default function Usermanagement() {
           </div>
         </div>
 
-
-
         {/* Sliding Panel */}
         <SlidingPanel
           isOpen={isPanelOpen}
@@ -424,7 +441,7 @@ export default function Usermanagement() {
             gap: "20px", // Gap between child elements
 
             opacity: isPanelOpen ? 1 : 0, // Opacity toggles based on panel state
-            transition: "opacity 0.3s ease-in-out" // Smooth opacity transition
+            transition: "opacity 0.3s ease-in-out", // Smooth opacity transition
           }}
         >
           {/* Header Text */}
@@ -450,7 +467,9 @@ export default function Usermanagement() {
                   value={formValues.UserName}
                   onChange={handleInputChange}
                 />
-                {errors.UserName && <span className={styles.error}>{errors.UserName}</span>}
+                {errors.UserName && (
+                  <span className={styles.error}>{errors.UserName}</span>
+                )}
               </div>
 
               {/* Email Field */}
@@ -469,8 +488,9 @@ export default function Usermanagement() {
                   value={formValues.email}
                   onChange={handleInputChange}
                 ></input>
-                {errors.email && <span className={styles.error}>{errors.email}</span>}
-
+                {errors.email && (
+                  <span className={styles.error}>{errors.email}</span>
+                )}
               </div>
 
               {/* Password Field */}
@@ -489,8 +509,9 @@ export default function Usermanagement() {
                   value={formValues.Password}
                   onChange={handleInputChange}
                 ></input>
-                {errors.Password && <span className={styles.error}>{errors.Password}</span>}
-
+                {errors.Password && (
+                  <span className={styles.error}>{errors.Password}</span>
+                )}
               </div>
 
               {/* User Role Field */}
@@ -507,27 +528,31 @@ export default function Usermanagement() {
                   value={formValues.Role}
                   onChange={handleInputChange}
                 >
-
                   <option value="" disabled select className="">
                     Select User Role
-
                   </option>
                   <option value="editor">Editor</option>
                   <option value="admin">Admin</option>
                 </select>
-                {errors.Role && <span className={styles.error}>{errors.Role}</span>}
-
+                {errors.Role && (
+                  <span className={styles.error}>{errors.Role}</span>
+                )}
               </div>
 
-              <div className={styles.field8 + ' mb-4'}>
+              <div className={styles.field8 + " mb-4"}>
                 <label>Assign Groups*</label>
                 <div className={styles.selectWrapper}>
                   <Select
                     isMulti
                     options={groups}
-                    value={groups.filter((group) => selectedGroups.includes(group.value))}
-                    onChange={(selectedOptions) =>
-                      setSelectedGroups(selectedOptions.map((option) => option.value)) // Update selected group IDs
+                    value={groups.filter((group) =>
+                      selectedGroups.includes(group.value)
+                    )}
+                    onChange={
+                      (selectedOptions) =>
+                        setSelectedGroups(
+                          selectedOptions.map((option) => option.value)
+                        )
                     }
                     placeholder="Search and select groups"
                     instanceId="assigned-groups-select"
@@ -535,9 +560,11 @@ export default function Usermanagement() {
                     styles={customStyles}
                   />
                   {errors.selectedGroups && (
-                    <span className={styles.error}>{errors.selectedGroups}</span>
+                    <span className={styles.error}>
+                      {errors.selectedGroups}
+                    </span>
                   )}
-                </div>  
+                </div>
               </div>
 
               <div className="flex items-center space-x-2 mb-5">
@@ -553,8 +580,9 @@ export default function Usermanagement() {
                 </label>
                 <span>{active ? "Active" : "Not Active"}</span>
 
-
-                <span className="text-white font-medium">Status<span className="text-blue-300">*</span></span>
+                <span className="text-white font-medium">
+                  Status<span className="text-blue-300">*</span>
+                </span>
               </div>
 
               {/* Submit Button and Clear Button */}
@@ -564,7 +592,7 @@ export default function Usermanagement() {
                   type="submit"
                   className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
                 >
-                  Submit & Save
+                  {editingUser? "Update User" : "Submit & Save"}
                 </button>
 
                 {/* Clear Button */}
@@ -579,9 +607,10 @@ export default function Usermanagement() {
                       Password: "",
                       Role: "",
                       selectedGroups: [],
-                      status: prevValues.status === "active" ? "clear" : "active", // Toggle status
+                      status:
+                        prevValues.status === "active" ? "clear" : "active", // Toggle status
                     }));
-  
+
                     setErrors({});
                   }}
                 >
@@ -595,7 +624,6 @@ export default function Usermanagement() {
                       strokeWidth="2"
                       d="M13 3h-2v4h2V3zm4 1l-1.5 1.5M7 4 5.5 5.5M6 9h12c1.1 0 1.99.9 1.99 2L20 19c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V11c0-1.1.9-2 2-2zm1.5 6l1.5 1.5-4 4-1.5-1.5 4-4z"
                     />
-
                   </span>
                   Clear
                 </button>
@@ -605,7 +633,5 @@ export default function Usermanagement() {
         </SlidingPanel>
       </div>
     </div>
-
-
   );
 }

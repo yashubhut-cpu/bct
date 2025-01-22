@@ -12,6 +12,7 @@ export const defaultHeaders = {
 };
 
 export const axiosInstance = axiosApi;
+
 export async function get(url, config = {}) {
   return new Promise((resolve, reject) => {
     axiosApi
@@ -74,6 +75,7 @@ export async function put(url, data, config = {}) {
       });
   });
 }
+
 export async function del(url, config = {}) {
   return new Promise((resolve, reject) => {
     axiosApi

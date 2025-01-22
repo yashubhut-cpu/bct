@@ -10,10 +10,10 @@ import dynamic from 'next/dynamic';
 import { useRouter } from "next/navigation";
 import Header from "../component/Header/header";
 
+// please check here...
 const Select = dynamic(() => import('react-select'), { ssr: false });
 
 export default function InputTradeAlert() {
-
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
 
@@ -23,7 +23,6 @@ export default function InputTradeAlert() {
   }
 
   const toggleMobileSidebar = () => setIsMobileSidebarActive(!isMobileSidebarActive);
-
 
   const [selectOptions, setSelectedOptions] = useState([]);
   const [selectOptions1, setSelectedOptions1] = useState([]);

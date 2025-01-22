@@ -1,57 +1,110 @@
 "use client";
 import { useState, useEffect } from "react";
 import React from "react";
-import styles from "../groupmanagement/styles.module.css"; // Correctly import the CSS module here
+import styles from "./styles.module.css";
 import Sidebar from "../component/Sidebar/sidebar";
-import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
-import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
-import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
-import Table from "../component/tablecomponent"; // Import the Table component
-import columnsConfig from "../columnsConfig"; // Import the columnsConfig
+import "@fontsource/be-vietnam-pro";
+import "@fontsource/be-vietnam-pro/400.css";
+import "@fontsource/be-vietnam-pro/400-italic.css";
+import Table from "../component/Table";
+import columnsConfig from "../columnsConfig";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import SlidingPanel from "../component/SlidingPanel"; // Import reusable SlidingPanel
+import SlidingPanel from "../component/SlidingPanel";
 import Select from "react-select";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import Header from "../component/Header/header";
-import { del, get, post, put } from "../api/base";  
+import { del, get, post, put } from "../api/base";
+import ConfirmationDialog from "../component/ConfirmationDialog";
 
 export default function Groupmanagement() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [alerts, setAlerts] = useState([]);
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [totalPages, setTotalPages] = useState(1); // Default to 1 to prevent errors
+  const [totalPages, setTotalPages] = useState(1);
   const [groupData, setGroupData] = useState([]);
+  const [editingGroup, setEditingGroup] = useState(null);
+  const [isSidebarActive, setIsSidebarActive] = useState(false);
+  const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+  const [tags, setTags] = useState([]);
+  const [editorsList, setEditorsList] = useState([]);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
 
-  const router = useRouter(); // Initialize the router
+  const router = useRouter();
 
   useEffect(() => {
     document.title = "Group Management";
     if (localStorage.getItem("accessToken")) {
-      router.push('/groupmanagement')
+      router.push("/groupmanagement");
     } else {
-      router.push('/')
+      router.push("/");
     }
   }, [router]);
 
-  const [isSidebarActive, setIsSidebarActive] = useState(false);
-  const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+  const fetchTags = async (value) => {
+    let apiUrl = "";
 
-  // Toggle the sidebar collapse state
-  const toggleSidebar = () => {
-    setIsSidebarActive(!isSidebarActive); // Toggle the state
-  }
+    if (value === "keap") {
+      apiUrl = "/api_client/keap_tags/";
+    } else if (value === "go_high_level") {
+      apiUrl = "/api_client/ghl_tags/";
+    } else {
+      setTags([]);
+      return;
+    }
 
-  const toggleMobileSidebar = () => setIsMobileSidebarActive(!isMobileSidebarActive);
-
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const handleSidebarToggle = () => {
-    setSidebarCollapsed(!isSidebarCollapsed);
+    try {
+      const response = await get(apiUrl);
+      if (response.status === 200) {
+        const data = await response.data;
+        setTags(data.tags);
+      } else {
+        throw new Error("Failed to fetch tags");
+      }
+    } catch (error) {
+      setTags([]);
+    }
   };
 
-  const togglePanel = () => {
+  useEffect(() => {
+    if (editingGroup && editingGroup.segmentation_criteria) {
+      fetchTags(editingGroup.segmentation_criteria);
+    }
+  }, [editingGroup]);
+
+  const toggleSidebar = () => {
+    setIsSidebarActive(!isSidebarActive);
+  };
+
+  const toggleMobileSidebar = () =>
+    setIsMobileSidebarActive(!isMobileSidebarActive);
+
+  const togglePanel = (rowData = null) => {
     setIsPanelOpen(!isPanelOpen);
+    if (rowData) {
+      setEditingGroup(rowData);
+      setFormValues({
+        groupName: rowData.group_name,
+        description: rowData.description,
+        status: rowData.is_active ? "active" : "inactive",
+        segmentation: rowData.segmentation_criteria,
+        tagAssigned: rowData.tag_id,
+        assignedEditors: rowData.editor_assigned_groups.map((editor) => ({
+          value: editor.editor.id,
+          label: `${editor.editor.first_name} ${editor.editor.last_name}`,
+        })),
+      });
+    } else {
+      setEditingGroup(null);
+      setFormValues({
+        groupName: "",
+        description: "",
+        status: "",
+        segmentation: "",
+        tagAssigned: "",
+        assignedEditors: [],
+      });
+    }
   };
 
   const [formValues, setFormValues] = useState({
@@ -73,27 +126,40 @@ export default function Groupmanagement() {
   });
 
   const handleEditorChange = (select) => {
-    setFormValues((prevFormValues) => ({
-      ...prevFormValues,
-      assignedEditors: select ? select.map((item) => item.label) : [],
-    }));
+    const assignedEditors = select || [];
 
-    setErrors((prevErrors) => ({
-      ...prevErrors,
+    setFormValues({
+      ...formValues,
+      assignedEditors,
+    });
+
+    setErrors({
+      ...errors,
       assignedEditors:
-        select && select.length > 0 ? "" : "At least one editor must be select.",
-    }));
+        assignedEditors.length > 0
+          ? ""
+          : "At least one editor must be selected.",
+    });
   };
 
-  const editorsList = [
-    { value: "editor1", label: "Jacob Jones" },
-    { value: "editor2", label: "Theresa Webb" },
-    { value: "editor3", label: "Arlene McCoy" },
-    { value: "editor4", label: "Dianne Russell" },
-    { value: "editor5", label: "Albert Flores" },
-    { value: "editor6", label: "Ralph Edwards" },
-    { value: "editor7", label: "Kathryn Murphy" },
-  ];
+  const getEditorsList = async () => {
+    try {
+      const response = await get("/group_management/editor_list/");
+      console.log("Fetched editors:", response);
+      const result = response.data.map((editor) => ({
+        value: editor.id,
+        label: `${editor.first_name} ${editor.last_name}`,
+      }));
+      setEditorsList(result);
+    } catch (error) {
+      console.error("Error fetching editors:", error);
+    }
+  };
+
+  useEffect(() => {
+    getEditorsList();
+  }, []);
+
 
   const customStyles = {
     clearIndicator: (provided) => ({
@@ -157,6 +223,8 @@ export default function Groupmanagement() {
 
   const handleInputChange = async (e) => {
     const { id, value } = e.target;
+    console.log("id", id);
+    console.log("value", value);
     setFormValues((prevFormValues) => ({
       ...prevFormValues,
       [id]: value,
@@ -165,13 +233,23 @@ export default function Groupmanagement() {
       ...prevErrors,
       [id]: value ? "" : "This field is required.",
     }));
+    if (id === "segmentation") {
+      await fetchTags(value);
+      setFormValues((prevFormValues) => ({
+        ...prevFormValues,
+        tagAssigned: "",
+      }));
+    }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const newErrors = {};
     Object.keys(formValues).forEach((key) => {
-      if (!formValues[key] || (Array.isArray(formValues[key]) && formValues[key].length === 0)) {
+      if (
+        !formValues[key] ||
+        (Array.isArray(formValues[key]) && formValues[key].length === 0)
+      ) {
         newErrors[key] = "This field is required.";
       }
     });
@@ -183,79 +261,79 @@ export default function Groupmanagement() {
         description: formValues.description,
         segmentation_criteria: formValues.segmentation,
         tag_id: formValues.tagAssigned,
-        editors_group_assignment: formValues.assignedEditors
+        editors_group_assignment: formValues.assignedEditors.map(
+          (editor) => editor.value
+        ),
       };
 
-      console.log("Payload", payload);
-
       try {
-        const response = await post('/group_management/create_group/', payload);
-        console.log(response);
+        let response;
+        if (editingGroup) {
+          response = await put(
+            `/group_management/update_group/${editingGroup.id}/`,
+            payload
+          );
+          console.log("Group updated successfully:", response.data);
+        } else {
+          response = await post("/group_management/create_group/", payload);
+          console.log("Group created successfully:", response.data);
+        }
+        togglePanel();
+        fetchGroups();
       } catch (error) {
-        console.error('Error creating group:', error);
+        console.error(
+          "Error saving group:",
+          error.response?.data || error.message
+        );
       }
-      console.log("Form submitted successfully", formValues);
     }
   };
 
-  const handleEdit = async (e) => {
-    e.preventDefault();
-    const newErrors = {};
-    Object.keys(formValues).forEach((key) => {
-      if (!formValues[key] || (Array.isArray(formValues[key]) && formValues[key].length === 0)) {
-        newErrors[key] = "This field is required.";
-      }
-    });
-    setErrors(newErrors);
+  const handleDeleteClick = (id) => {
+    setGroupToDelete(id);
+    setIsConfirmDialogOpen(true);
+  };
 
-    let id = 'a33299d1-cfab-4f5e-b070-32c69b517dda';
-
-    const payload = {
-      group_name: formValues.groupName,
-      description: formValues.description,
-      segmentation_criteria: formValues.segmentation,
-      tag_id: formValues.tagAssigned,
-      editors_group_assignment: formValues.assignedEditors
-    };
-
-    console.log("Payload", payload);
-    try {
-      const response = await put(`/group_management/update_group/${id}`, payload);
-      console.log(response);
-    } catch (error) {
-      console.error('Error updating group:', error);
-    }
-  }
-
-  const handleDeleteClick = async (e) => {
-    e.preventDefault();
-
-    let id = 'a33299d1-cfab-4f5e-b070-32c69b517dda';
-
-    try {
-      const response = await del(`/group_management/delete_group/${id}`, payload);
-      console.log(response);
-    } catch (error) {
-      console.error('Error delete group:', error);
+  const confirmDelete = async () => {
+    if (!groupToDelete) {
+      console.warn("No group selected for deletion.");
+      return;
     }
 
-    fetchGroups();
+    try {
+
+      await del(`/group_management/delete_group/${groupToDelete}/`);
+      console.log("Group deleted successfully");
+
+      fetchGroups();
+    } catch (error) {
+      console.error(
+        `Error deleting group with ID ${groupToDelete}:`,
+        error.response?.data || error.message
+      );
+    } finally {
+      setIsConfirmDialogOpen(false);
+      setGroupToDelete(null);
+    }
+  };
+
+  const fetchGroups = async () => {
+    try {
+      const response = await get("/group_management/get_group/", {
+        page,
+        page_size: itemsPerPage,
+      });
+      setGroupData(response?.data?.groups);
+      setTotalPages(response?.data?.total_pages || 1);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+      setTotalPages(1);
+    }
   };
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const response = await get("/group_management/get_group/", { page, page_size: itemsPerPage });
-  
-        setGroupData(response?.data?.groups);
-        setTotalPages(response?.data?.total_pages || 1); 
-      } catch (error) {
-        console.error("Error fetching groups:", error);
-        setTotalPages(1); 
-      }
-    };
     fetchGroups();
-  }, [page,itemsPerPage]);
+  }, [page, itemsPerPage]);
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) {
@@ -263,41 +341,65 @@ export default function Groupmanagement() {
     }
   };
 
-  
+  const handleEditClick = (id, rowData) => {
+    setEditingGroup(rowData);
+    setFormValues({
+      groupName: rowData.group_name,
+      description: rowData.description,
+      status: rowData.is_active ? "active" : "inactive",
+      segmentation: rowData.segmentation_criteria,
+      tagAssigned: rowData.tag_id,
+      assignedEditors: rowData.editor_assigned_groups.map((editor) => ({
+        value: editor.editor.id,
+        label: `${editor.editor.first_name} ${editor.editor.last_name}`,
+      })),
+    });
+    setIsPanelOpen(true);
+  };
 
-  console.log(groupData);
   return (
     <div className={styles.dashboardContainer}>
       <Sidebar
-        isCollapsed={isSidebarActive} toggleSidebar={toggleSidebar} isMobileActive={isMobileSidebarActive} />
+        isCollapsed={isSidebarActive}
+        toggleSidebar={toggleSidebar}
+        isMobileActive={isMobileSidebarActive}
+      />
       <Header toggleSidebar={toggleMobileSidebar} />
       <div
-        className={`${isSidebarActive ? styles.mainContent : styles.sidebarActive}`}
+        className={`${
+          isSidebarActive ? styles.mainContent : styles.sidebarActive
+        }`}
       >
         <div className={styles.pageContent}>
-          {/* Group Management Section */}
           <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
             <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
               Group Management
             </h2>
-            <button className={styles.pageButton} onClick={togglePanel}>
+            <button className={styles.pageButton} onClick={() => togglePanel()}>
               <img src="/images/addnewgroup.svg" alt="Add Group Icon" />
               Add New Group
             </button>
           </div>
 
-          {/* Table Content */}
           <div className="mx-2 mb-4">
             <div className="bg-[#1C2546] rounded-[20px] shadow relative">
               <div className={styles.tableSection}>
-                <div className={styles.tableContainer + " scrollbar"} id="style-2">
-                  <div className={styles.tableContent + " force-overflow p-4 pt-0"}>
-                    <Table alerts={groupData} visibleColumns={columnsConfig.groupmanagement} />
-                    
+                <div
+                  className={styles.tableContainer + " scrollbar"}
+                  id="style-2"
+                >
+                  <div
+                    className={styles.tableContent + " force-overflow p-4 pt-0"}
+                  >
+                    <Table
+                      alerts={groupData}
+                      visibleColumns={columnsConfig.groupmanagement}
+                      onEditClick={handleEditClick}
+                      onDeleteClick={handleDeleteClick}
+                    />
                   </div>
                 </div>
               </div>
-              {/* Pagination Section */}
               <div className={styles.pagination + " p-4"}>
                 <button
                   className={styles.paginationButton}
@@ -309,7 +411,9 @@ export default function Groupmanagement() {
                 {Array.from({ length: totalPages }, (_, index) => (
                   <button
                     key={index}
-                    className={`${styles.paginationButton} ${page === index + 1 ? styles.active : ""}`}
+                    className={`${styles.paginationButton} ${
+                      page === index + 1 ? styles.active : ""
+                    }`}
                     onClick={() => handlePageChange(index + 1)}
                   >
                     {index + 1}
@@ -327,30 +431,31 @@ export default function Groupmanagement() {
           </div>
         </div>
 
-        {/* Sliding Panel */}
         <SlidingPanel
           isOpen={isPanelOpen}
-          onClose={togglePanel}
-          width="w-[700px]" // Fixed width 700px
+          onClose={() => setIsPanelOpen(false)}
+          width="w-[700px]"
           style={{
-            height: "685px", 
-            top: "0px", 
-            left: "998px", 
-            gap: "20px", 
-            opacity: isPanelOpen ? 1 : 0, // Opacity toggles based on panel state
-            transition: "opacity 0.3s ease-in-out", // Smooth opacity transition
+            height: "685px",
+            top: "0px",
+            left: "998px",
+            gap: "20px",
+            opacity: isPanelOpen ? 1 : 0,
+            transition: "opacity 0.3s ease-in-out",
           }}
         >
-          {/* Header Text */}
           <div className="p-4 pb-0 force-overflow">
-            <h2 className="text-white text-[36px]">Add/Edit Group</h2>
+            <h2 className="text-white text-[36px]">
+              {editingGroup ? "Edit Group" : "Add New Group"}
+            </h2>
           </div>
-          {/* Form Content */}
           <div className="p-6 bg-[#1C2546] text-white rounded-b-lg">
             <form onSubmit={handleSubmit}>
-              {/* Group Name Field */}
               <div className="mb-4">
-                <label htmlFor="groupName" className="block text-white text-sm font-medium mb-2">
+                <label
+                  htmlFor="groupName"
+                  className="block text-white text-sm font-medium mb-2"
+                >
                   Group Name*
                 </label>
                 <input
@@ -361,12 +466,16 @@ export default function Groupmanagement() {
                   value={formValues.groupName}
                   onChange={handleInputChange}
                 />
-                {errors.groupName && <span className={styles.error}>{errors.groupName}</span>}
+                {errors.groupName && (
+                  <span className={styles.error}>{errors.groupName}</span>
+                )}
               </div>
 
-              {/* Description Field */}
               <div className="mb-4">
-                <label htmlFor="description" className="block text-white text-sm font-medium mb-2">
+                <label
+                  htmlFor="description"
+                  className="block text-white text-sm font-medium mb-2"
+                >
                   Description*
                 </label>
                 <textarea
@@ -377,12 +486,16 @@ export default function Groupmanagement() {
                   value={formValues.description}
                   onChange={handleInputChange}
                 ></textarea>
-                {errors.description && <span className={styles.error}>{errors.description}</span>}
+                {errors.description && (
+                  <span className={styles.error}>{errors.description}</span>
+                )}
               </div>
 
-              {/* Status Field */}
               <div className="mb-4">
-                <label htmlFor="status" className="block text-white text-sm font-medium mb-2">
+                <label
+                  htmlFor="status"
+                  className="block text-white text-sm font-medium mb-2"
+                >
                   Status*
                 </label>
                 <select
@@ -397,12 +510,16 @@ export default function Groupmanagement() {
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
-                {errors.status && <span className={styles.error}>{errors.status}</span>}
+                {errors.status && (
+                  <span className={styles.error}>{errors.status}</span>
+                )}
               </div>
 
-              {/* Segmentation Criteria Field */}
               <div className="mb-4">
-                <label htmlFor="segmentation" className="block text-white text-sm font-medium mb-2">
+                <label
+                  htmlFor="segmentation"
+                  className="block text-white text-sm font-medium mb-2"
+                >
                   Segmentation Criteria*
                 </label>
                 <select
@@ -414,16 +531,19 @@ export default function Groupmanagement() {
                   <option value="" disabled>
                     Select Segmentation Criteria
                   </option>
-                  <option value="criteria1">Criteria 1</option>
-                  <option value="criteria2">Criteria 2</option>
-                  <option value="criteria3">Criteria 3</option>
+                  <option value="keap">Keap</option>
+                  <option value="go_high_level">Go High Level</option>
                 </select>
-                {errors.segmentation && <span className={styles.error}>{errors.segmentation}</span>}
+                {errors.segmentation && (
+                  <span className={styles.error}>{errors.segmentation}</span>
+                )}
               </div>
 
-              {/* Tag Assigned Field */}
               <div className="mb-4">
-                <label htmlFor="tagAssigned" className="block text-white text-sm font-medium mb-2">
+                <label
+                  htmlFor="tagAssigned"
+                  className="block text-white text-sm font-medium mb-2"
+                >
                   Tag Assigned*
                 </label>
                 <select
@@ -435,14 +555,23 @@ export default function Groupmanagement() {
                   <option value="" disabled>
                     Select Tags
                   </option>
-                  <option value="criteria1">Criteria 1</option>
-                  <option value="criteria2">Criteria 2</option>
-                  <option value="criteria3">Criteria 3</option>
+                  {tags.length === 0 ? (
+                    <option value="">
+                      Select a segmentation criteria first
+                    </option>
+                  ) : (
+                    tags.map((tag) => (
+                      <option key={tag.tag_id} value={tag.tag_id}>
+                        {tag.tag_name}
+                      </option>
+                    ))
+                  )}
                 </select>
-                {errors.tagAssigned && <span className={styles.error}>{errors.tagAssigned}</span>}
+                {errors.tagAssigned && (
+                  <span className={styles.error}>{errors.tagAssigned}</span>
+                )}
               </div>
 
-              {/* Assign Editors Field */}
               <div className={styles.field8}>
                 <label>Assign Editors*</label>
                 <div className={styles.selectWrapper}>
@@ -450,36 +579,28 @@ export default function Groupmanagement() {
                     isMulti
                     name="editors"
                     options={editorsList}
-                    value={editorsList.filter((option) =>
-                      formValues.assignedEditors.includes(option.label)
-                    )}
+                    value={formValues.assignedEditors}
                     onChange={handleEditorChange}
                     placeholder="Search and select editors"
                     classNamePrefix="select"
                     styles={customStyles}
                   />
                   {errors.assignedEditors && (
-                    <span className={styles.error}>{errors.assignedEditors}</span>
+                    <span className={styles.error}>
+                      {errors.assignedEditors}
+                    </span>
                   )}
                 </div>
               </div>
 
-              {/* Submit Button and Clear Button */}
-                      <div className="mb-4 mt-4 flex justify-start space-x-4">
-                      {/* Submit Button */}
-                      <button
-                        type="submit"
-                        className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
-                      >
-                        Submit & Save
-                      </button>
+              <div className="mb-4 mt-4 flex justify-start space-x-4">
+                <button
+                  type="submit"
+                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
+                >
+                  {editingGroup ? "Update Group" : "Submit & Save"}
+                </button>
 
-                      {/* Success Message */}
-                      {Object.keys(errors).length === 0 && (
-                        <span className={styles.successMessage}>Group Saved successfully</span>
-                      )}
-
-                      {/* Clear Button */}
                 <button
                   type="button"
                   className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"
@@ -495,7 +616,6 @@ export default function Groupmanagement() {
                     setErrors({});
                   }}
                 >
-                  {/* Recycle Icon (Rounded cancel logo) */}
                   <span className="mr-2">
                     <img src="/images/clear_logo.svg" alt="Recycle Icon" />
                   </span>
@@ -505,6 +625,13 @@ export default function Groupmanagement() {
             </form>
           </div>
         </SlidingPanel>
+
+        <ConfirmationDialog
+          isOpen={isConfirmDialogOpen}
+          onClose={() => setIsConfirmDialogOpen(false)}
+          onConfirm={confirmDelete}
+          message="Are you sure you want to delete this group?"
+        />
       </div>
     </div>
   );

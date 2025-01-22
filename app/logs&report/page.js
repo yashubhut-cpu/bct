@@ -1,6 +1,6 @@
 "use client";
 
-import Table from '../component/tablecomponent';
+import Table from '../component/Table';
 import styles from '../logs&report/styles.module.css';
 import { Search, ChevronRight } from 'lucide-react';
 import columnsConfig from "../columnsConfig";

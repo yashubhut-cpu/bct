@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Sidebar from "../component/Sidebar/sidebar";
-import Table from "../component/tablecomponent";
+import Table from "../component/Table";
 import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
 import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
 import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import Table from "../component/tablecomponent";
+import Table from "../component/Table";
 import styles from "../errornotification/styles.module.css";
 import { ChevronRight } from "lucide-react";
 import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
