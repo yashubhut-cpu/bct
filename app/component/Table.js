@@ -91,6 +91,7 @@ const TableRow = ({
     }
   }
 
+
   return (
     <tr className="my-2 border-b border-gray-500 last:border-b-0">
       {visibleColumns.includes("checkbox") && (
@@ -143,6 +144,7 @@ const TableRow = ({
           {assignedGroups.map((group, index) => (
             <div key={index}>{group.group.group_name}</div>
           ))}
+          
         </td>
       )}
       {visibleColumns.includes("assignedEditors") && (

@@ -29,6 +29,24 @@ export default function Groupmanagement() {
   const [editorsList, setEditorsList] = useState([]);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
+  const [submitResult, setSubmitResult] = useState(null);
+  const [showSubmitResult, setShowSubmitResult] = useState(false);
+  const [formValues, setFormValues] = useState({
+    groupName: "",
+    description: "",
+    status: "",
+    segmentation: "",
+    tagAssigned: "",
+    assignedEditors: [],
+  });
+
+  const [errors, setErrors] = useState({
+    groupName: "",
+    description: "",
+    status: "",
+    segmentation: "",
+    tagAssigned: "",
+  });
 
   const router = useRouter();
 
@@ -81,6 +99,8 @@ export default function Groupmanagement() {
 
   const togglePanel = (rowData = null) => {
     setIsPanelOpen(!isPanelOpen);
+    setSubmitResult(null);
+    setShowSubmitResult(false);
     if (rowData) {
       setEditingGroup(rowData);
       setFormValues({
@@ -107,45 +127,17 @@ export default function Groupmanagement() {
     }
   };
 
-  const [formValues, setFormValues] = useState({
-    groupName: "",
-    description: "",
-    status: "",
-    segmentation: "",
-    tagAssigned: "",
-    assignedEditors: [],
-  });
-
-  const [errors, setErrors] = useState({
-    groupName: "",
-    description: "",
-    status: "",
-    segmentation: "",
-    tagAssigned: "",
-    assignedEditors: "",
-  });
-
   const handleEditorChange = (select) => {
     const assignedEditors = select || [];
-
     setFormValues({
       ...formValues,
       assignedEditors,
-    });
-
-    setErrors({
-      ...errors,
-      assignedEditors:
-        assignedEditors.length > 0
-          ? ""
-          : "At least one editor must be selected.",
     });
   };
 
   const getEditorsList = async () => {
     try {
       const response = await get("/group_management/editor_list/");
-      console.log("Fetched editors:", response);
       const result = response.data.map((editor) => ({
         value: editor.id,
         label: `${editor.first_name} ${editor.last_name}`,
@@ -159,7 +151,6 @@ export default function Groupmanagement() {
   useEffect(() => {
     getEditorsList();
   }, []);
-
 
   const customStyles = {
     clearIndicator: (provided) => ({
@@ -239,16 +230,29 @@ export default function Groupmanagement() {
         ...prevFormValues,
         tagAssigned: "",
       }));
+      if (
+        id === "status" &&
+        value === "inactive" &&
+        editingGroup &&
+        editingGroup.is_active
+      ) {
+        setEditingGroup((prevEditingGroup) => ({
+          ...prevEditingGroup,
+          is_active: false,
+        }));
+      }
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = {};
     Object.keys(formValues).forEach((key) => {
       if (
-        !formValues[key] ||
-        (Array.isArray(formValues[key]) && formValues[key].length === 0)
+        key !== "assignedEditors" && // Exclude assignedEditors from required fields
+        (!formValues[key] ||
+          (Array.isArray(formValues[key]) && formValues[key].length === 0))
       ) {
         newErrors[key] = "This field is required.";
       }
@@ -261,6 +265,7 @@ export default function Groupmanagement() {
         description: formValues.description,
         segmentation_criteria: formValues.segmentation,
         tag_id: formValues.tagAssigned,
+        is_active: formValues.status === "active",
         editors_group_assignment: formValues.assignedEditors.map(
           (editor) => editor.value
         ),
@@ -273,18 +278,29 @@ export default function Groupmanagement() {
             `/group_management/update_group/${editingGroup.id}/`,
             payload
           );
-          console.log("Group updated successfully:", response.data);
+          setSubmitResult("Group updated successfully!");
         } else {
           response = await post("/group_management/create_group/", payload);
-          console.log("Group created successfully:", response.data);
+          setSubmitResult("Group created successfully!");
         }
-        togglePanel();
         fetchGroups();
+        setShowSubmitResult(true);
+        setTimeout(() => {
+          setShowSubmitResult(false);
+          setSubmitResult(null);
+          togglePanel();
+        }, 3000); // Hide message and close panel after 3 seconds
       } catch (error) {
         console.error(
           "Error saving group:",
           error.response?.data || error.message
         );
+        setSubmitResult("Error saving group. Please try again.");
+        setShowSubmitResult(true);
+        setTimeout(() => {
+          setShowSubmitResult(false);
+          setSubmitResult(null);
+        }, 3000); // Hide error message after 3 seconds
       }
     }
   };
@@ -301,7 +317,6 @@ export default function Groupmanagement() {
     }
 
     try {
-
       await del(`/group_management/delete_group/${groupToDelete}/`);
       console.log("Group deleted successfully");
 
@@ -323,7 +338,15 @@ export default function Groupmanagement() {
         page,
         page_size: itemsPerPage,
       });
-      setGroupData(response?.data?.groups);
+      const groupsWithAssignedEditors = response?.data?.groups.map((group) => ({
+        ...group,
+        assignedEditors: group.editor_assigned_groups
+          .map(
+            (editor) => `${editor.editor.first_name} ${editor.editor.last_name}`
+          )
+          .join(", "),
+      }));
+      setGroupData(groupsWithAssignedEditors);
       setTotalPages(response?.data?.total_pages || 1);
     } catch (error) {
       console.error("Error fetching groups:", error);
@@ -573,7 +596,7 @@ export default function Groupmanagement() {
               </div>
 
               <div className={styles.field8}>
-                <label>Assign Editors*</label>
+                <label>Assign Editors</label>
                 <div className={styles.selectWrapper}>
                   <Select
                     isMulti
@@ -585,12 +608,21 @@ export default function Groupmanagement() {
                     classNamePrefix="select"
                     styles={customStyles}
                   />
-                  {errors.assignedEditors && (
-                    <span className={styles.error}>
-                      {errors.assignedEditors}
-                    </span>
-                  )}
                 </div>
+              </div>
+
+              <div className="mb-4 mt-4">
+                {showSubmitResult && submitResult && (
+                  <div
+                    className={`p-4 rounded-lg ${
+                      submitResult.includes("Error")
+                        ? "bg-red-100 text-red-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {submitResult}
+                  </div>
+                )}
               </div>
 
               <div className="mb-4 mt-4 flex justify-start space-x-4">
@@ -614,6 +646,7 @@ export default function Groupmanagement() {
                       assignedEditors: [],
                     });
                     setErrors({});
+                    setSubmitResult(null);
                   }}
                 >
                   <span className="mr-2">

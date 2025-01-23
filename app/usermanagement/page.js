@@ -14,6 +14,7 @@ import Select from "react-select";
 import { del, get, post, put } from "../api/base";
 import { useRouter } from "next/navigation";
 import Header from "../component/Header/header";
+import ConfirmationDialog from "../component/ConfirmationDialog";
 
 export default function Usermanagement() {
   const [users, setUsers] = useState([]);
@@ -34,6 +35,9 @@ export default function Usermanagement() {
   });
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [showSubmitResult, setShowSubmitResult] = useState(false);
 
   const handleToggle = () => {
     setActive((prev) => {
@@ -46,7 +50,6 @@ export default function Usermanagement() {
       return newActive;
     });
   };
-
 
   const toggleSidebar = () => {
     setIsSidebarActive(!isSidebarActive);
@@ -105,27 +108,28 @@ export default function Usermanagement() {
     setIsPanelOpen(!isPanelOpen);
     if (rowData) {
       setEditingUser(rowData);
-
       setFormValues({
         UserName: rowData.first_name + " " + rowData.last_name,
         email: rowData.email,
         Role: rowData.role,
-        selectedGroups: rowData.group_editors_assignment.map((group) => 
-          ({value: group.id, label: `${group.group_name}`})),
+        Password: "", // We don't show the password when editing
       });
+      setSelectedGroups(
+        rowData.group_editors_assignment.map((group) => group.id)
+      );
     } else {
       setEditingUser(null);
       setFormValues({
         UserName: "",
         email: "",
         Role: "",
-        selectedGroups: [],
+        Password: "",
       });
-      setIsPanelOpen(true); 
+      setSelectedGroups([]);
     }
   };
 
-  const router = useRouter(); // Initialize the router
+  const router = useRouter();
 
   useEffect(() => {
     document.title = "User Management";
@@ -143,7 +147,7 @@ export default function Usermanagement() {
     Role: "",
     selectedGroups: "",
   });
-  
+
   const customStyles = {
     clearIndicator: (provided) => ({
       ...provided,
@@ -216,33 +220,35 @@ export default function Usermanagement() {
     }));
   };
 
+  const handleGroupChange = (selectedOptions) => {
+    setSelectedGroups(selectedOptions.map((option) => option.value));
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      selectedGroups:
+        selectedOptions.length > 0 ? "" : "This field is required.",
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const newErrors = {};
     Object.keys(formValues).forEach((key) => {
-      if (
-        !formValues[key] ||
-        (Array.isArray(formValues[key]) && formValues[key].length === 0)
-      ) {
+      if (!formValues[key]) {
         newErrors[key] = "This field is required.";
       }
     });
-    if (selectedGroups.length <= 0) {
-      newErrors.selectedGroups = "This field is requires.";
+    if (selectedGroups.length === 0) {
+      newErrors.selectedGroups = "This field is required.";
     }
     setErrors(newErrors);
 
-    const [first_name, ...rest] = formValues.UserName.trim().split(" ");
-    const last_name = rest.join(" ");
-
-    if (!first_name || !last_name) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        UserName:
-          "Please provide both first and last names separated by a space.",
-      }));
+    if (Object.keys(newErrors).length > 0) {
       return;
     }
+
+    const [first_name, ...rest] = formValues.UserName.trim().split(" ");
+    const last_name = rest.join(" ");
 
     const payload = {
       first_name,
@@ -256,13 +262,35 @@ export default function Usermanagement() {
     console.log("Payload", payload);
 
     try {
-      const response = await post(
-        "/user_management/create_user_management/",
-        payload
-      );
-      console.log(response);
+      let response;
+      if (editingUser) {
+        response = await put(
+          `/user_management/update_user_management/${editingUser.id}`,
+          payload
+        );
+        setSubmitResult("Group updated successfully!");
+      } else {
+        response = await post(
+          "/user_management/create_user_management/",
+          payload
+        );
+        setSubmitResult("Group created successfully!");
+      }
+      togglePanel();
+      fetchUsers();
+      setShowSubmitResult(true);
+      setTimeout(() => {
+        setShowSubmitResult(false);
+        setSubmitResult(null);
+      }, 3000);
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error creating/updating user:", error);
+      setSubmitResult("Error saving group. Please try again.");
+      setShowSubmitResult(true);
+      setTimeout(() => {
+        setShowSubmitResult(false);
+        setSubmitResult(null);
+      }, 3000); // Hide error message after 3 seconds
     }
   };
 
@@ -291,7 +319,7 @@ export default function Usermanagement() {
       return;
     }
 
-    let id = "a33299d1-cfab-4f5e-b070-32c69b517dda";
+    const id = "a33299d1-cfab-4f5e-b070-32c69b517dda";
 
     const payload = {
       first_name,
@@ -314,39 +342,55 @@ export default function Usermanagement() {
     }
   };
 
-  const handleRemove = async (e, id) => {
-    e.preventDefault();
+  const handleDeleteClick = (id) => {
+    setUserToDelete(id);
+    setIsConfirmDialogOpen(true);
+  };
 
-    const payload = {
-      first_name,
-      last_name,
-      email: formValues.email,
-      is_active: active,
-      role: formValues.Role,
-      group_editors_assignment: selectedGroups,
-    };
+  const fetchUsers = async () => {
+    try {
+      const response = await get("/user_management/user_management_list/", {
+        page,
+        page_size: itemsPerPage,
+      });
+      const usersWithAssignedUsers = response?.data?.users.map((user) => ({
+        ...user,
+        assignedEditors: user.group_editors_assignment.map(
+          (group) => group.group_name
+        ),
+      }));
+      setUsers(usersWithAssignedUsers);
+      setTotalPages(response?.data?.total_pages || 1);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setTotalPages(1);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) {
+      console.warn("No user selected for deletion");
+      return;
+    }
 
     try {
-      const response = await del(
-        `/user_management/delete_user_management/${id}/`,
-        payload
-      );
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id));
-      console.log(response);
+      await del(`/user_management/delete_user_management/${userToDelete}/`);
+      console.log("User deleted successfully");
+
+      fetchUsers();
     } catch (error) {
-      console.error("Error delete user:", error);
+      console.error(
+        `Error deleting user with ID ${groupToDelete}:`,
+        error.response?.data || error.message
+      );
+    } finally {
+      setUserToDelete(null);
+      setIsConfirmDialogOpen(false);
     }
   };
 
   const handleEditClick = (id, rowData) => {
-    setEditingUser(rowData);
-    setFormValues({
-      UserName: rowData.first_name + " " + rowData.last_name,
-      email: rowData.email,
-      Role: rowData.role,
-      selectedGroups: rowData.group_editors_assignment,
-    });
-    setIsPanelOpen(!isPanelOpen);
+    togglePanel(rowData);
   };
 
   return (
@@ -369,7 +413,7 @@ export default function Usermanagement() {
             <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
               User Management
             </h2>
-            <button className={styles.pageButton} onClick={()=>togglePanel()}>
+            <button className={styles.pageButton} onClick={() => togglePanel()}>
               <img src="/images/add_user.svg" alt="Add Group Icon" />
               Add New User
             </button>
@@ -390,7 +434,7 @@ export default function Usermanagement() {
                       alerts={users}
                       visibleColumns={columnsConfig.usermanagement}
                       onEditClick={handleEditClick}
-                      onDeleteClick={(id) => handleRemove(id)}
+                      onDeleteClick={handleDeleteClick}
                     />
                   </div>
                 </div>
@@ -548,18 +592,13 @@ export default function Usermanagement() {
                     value={groups.filter((group) =>
                       selectedGroups.includes(group.value)
                     )}
-                    onChange={
-                      (selectedOptions) =>
-                        setSelectedGroups(
-                          selectedOptions.map((option) => option.value)
-                        )
-                    }
+                    onChange={handleGroupChange}
                     placeholder="Search and select groups"
                     instanceId="assigned-groups-select"
                     classNamePrefix="select"
                     styles={customStyles}
                   />
-                  {errors.selectedGroups && (
+                  {errors.selectedGroups && selectedGroups.length === 0 && (
                     <span className={styles.error}>
                       {errors.selectedGroups}
                     </span>
@@ -592,7 +631,7 @@ export default function Usermanagement() {
                   type="submit"
                   className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
                 >
-                  {editingUser? "Update User" : "Submit & Save"}
+                  {editingUser ? "Update User" : "Submit & Save"}
                 </button>
 
                 {/* Clear Button */}
@@ -610,7 +649,7 @@ export default function Usermanagement() {
                       status:
                         prevValues.status === "active" ? "clear" : "active", // Toggle status
                     }));
-
+                    console.log("hello this is selected group", selectedGroups);
                     setErrors({});
                   }}
                 >
@@ -631,6 +670,14 @@ export default function Usermanagement() {
             </form>
           </div>
         </SlidingPanel>
+
+        <ConfirmationDialog
+          isOpen={isConfirmDialogOpen}
+          onClose={() => setIsConfirmDialogOpen(false)}
+          onConfirm={confirmDelete}
+          title="Delete User"
+          message="Are you sure you want to delete this user?"
+        />
       </div>
     </div>
   );
