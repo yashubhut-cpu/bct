@@ -1,79 +1,111 @@
 "use client";
-import { useState, useEffect } from "react";
-import React from "react";
+import { useState, useEffect, useCallback } from "react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
+import { del, get, post, put } from "../api/base";
+import { useRouter } from "next/navigation";
+import "@fontsource/be-vietnam-pro";
+import "@fontsource/be-vietnam-pro/400.css";
+import "@fontsource/be-vietnam-pro/400-italic.css";
 import styles from "../usermanagement/styles.module.css";
 import Sidebar from "../component/Sidebar/sidebar";
 import Table from "../component/Table";
 import columnsConfig from "../columnsConfig";
-import { ChevronRight, ChevronLeft } from "lucide-react";
-import "@fontsource/be-vietnam-pro";
-import "@fontsource/be-vietnam-pro/400.css";
-import "@fontsource/be-vietnam-pro/400-italic.css";
 import SlidingPanel from "../component/SlidingPanel";
 import Select from "react-select";
-import { del, get, post, put } from "../api/base";
-import { useRouter } from "next/navigation";
 import Header from "../component/Header/header";
 import ConfirmationDialog from "../component/ConfirmationDialog";
-
+import Popup from "../component/Popup";
+import CustomSelect from "../component/CustomSelect";
+import Loading from "../component/loading";
 export default function Usermanagement() {
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
   const [groups, setGroups] = useState([]);
-  const [selectedGroups, setSelectedGroups] = useState([]);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [active, setActive] = useState(false);
+  const [active, setActive] = useState(true);
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [formValues, setFormValues] = useState({
-    UserName: "",
-    email: "",
-    Password: "",
-    status: active ? "true" : "false",
-    Role: "",
-  });
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [showSubmitResult, setShowSubmitResult] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [popup, setPopup] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  const [formValues, setFormValues] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    Role: "",
+    assignedGroups: [],
+  });
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    Role: "",
+    assignedGroups: "",
+  });
 
   const handleToggle = () => {
-    setActive((prev) => {
-      const newActive = !prev;
-      setFormValues((prevFormValues) => ({
-        ...prevFormValues,
-        status: newActive ? "true" : "false",
-      }));
-      console.log("User active status:", newActive);
-      return newActive;
-    });
+    setActive((prev) => !prev);
   };
+
+  useEffect(() => {
+    if (editingUser) {
+      setActive(editingUser.is_active);
+      setIsEditing(true);
+    } else {
+      setActive(true);
+      setIsEditing(false);
+    }
+  }, [editingUser]);
 
   const toggleSidebar = () => {
     setIsSidebarActive(!isSidebarActive);
+    localStorage.setItem("isSidebarActive", !isSidebarActive);
   };
 
+  useEffect(() => {
+    const isSidebarActive = localStorage.getItem("isSidebarActive");
+    if (isSidebarActive === "true") {
+      localStorage.setItem("isSidebarActive", true);
+      setIsSidebarActive(true);
+    } else {
+      localStorage.setItem("isSidebarActive", false);
+      setIsSidebarActive(false);
+    }
+  }, []);
   const toggleMobileSidebar = () =>
     setIsMobileSidebarActive(!isMobileSidebarActive);
 
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await get("/user_management/user_management_list/", {
+        page,
+        page_size: itemsPerPage,
+      });
+      setUsers(response.data?.users);
+      console.log("users fetching...", response.data?.users);
+      setTotalPages(response?.data?.total_pages || 1);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, itemsPerPage]); // Dependencies
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await get("/user_management/user_management_list/", {
-          page,
-          page_size: itemsPerPage,
-        });
-        setUsers(response.data?.users);
-        setTotalPages(response?.data?.total_pages || 1);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setTotalPages(1);
-      }
-    };
     fetchUsers();
-  }, [page, itemsPerPage]);
+  }, [fetchUsers]);
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) {
@@ -81,24 +113,22 @@ export default function Usermanagement() {
     }
   };
 
-  useEffect(() => {
-    async function fetchGroups() {
-      try {
-        const response = await get("/user_management/group_list/");
-        setGroups(
-          response.data.map((group) => ({
-            value: group.id,
-            label: group.group_name,
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching groups:", error);
-      }
-    }
+  const handleGroupChange = (select) => {
+    const assignedGroups = select || [];
 
-    togglePanel();
-    fetchGroups();
-  }, []);
+    setFormValues({
+      ...formValues,
+      assignedGroups,
+    });
+
+    setErrors({
+      ...errors,
+      assignedGroups:
+        assignedGroups.length > 0
+          ? ""
+          : "At least one editor must be selected.",
+    });
+  };
 
   useEffect(() => {
     setIsPanelOpen(isPanelOpen);
@@ -109,23 +139,24 @@ export default function Usermanagement() {
     if (rowData) {
       setEditingUser(rowData);
       setFormValues({
-        UserName: rowData.first_name + " " + rowData.last_name,
+        firstName: rowData.first_name,
+        lastName: rowData.last_name,
         email: rowData.email,
         Role: rowData.role,
-        Password: "", // We don't show the password when editing
+        assignedGroups: rowData.group?.map((group) => ({
+          value: group.id,
+          label: `${group.group_name}`,
+        })),
       });
-      setSelectedGroups(
-        rowData.group_editors_assignment.map((group) => group.id)
-      );
     } else {
       setEditingUser(null);
       setFormValues({
-        UserName: "",
+        firstName: "",
+        lastName: "",
         email: "",
         Role: "",
-        Password: "",
+        assignedGroups: [],
       });
-      setSelectedGroups([]);
     }
   };
 
@@ -140,18 +171,28 @@ export default function Usermanagement() {
     }
   }, [router]);
 
-  const [errors, setErrors] = useState({
-    UserName: "",
-    email: "",
-    Password: "",
-    Role: "",
-    selectedGroups: "",
-  });
+  const getGroupsList = async () => {
+    try {
+      const response = await get("/user_management/group_list/");
+      const result = response.data.map((group) => ({
+        value: group.id,
+        label: group.group_name,
+      }));
+      setGroups(result);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+    }
+  };
+
+  useEffect(() => {
+    getGroupsList();
+  }, []);
 
   const customStyles = {
     clearIndicator: (provided) => ({
       ...provided,
       color: "#fff",
+      cursor: "pointer",
       ":hover": {
         color: "#ff6b6b",
       },
@@ -187,7 +228,13 @@ export default function Usermanagement() {
     option: (provided, state) => ({
       ...provided,
       backgroundColor: state.isSelected ? "#1C2546" : "transparent",
+      ":hover": {
+        backgroundColor: "#2196f3",
+        borderRadius: "5px",
+        color: "#FFF",
+      },
       color: "#FFF",
+      cursor: "pointer",
     }),
     menu: (provided) => ({
       ...provided,
@@ -206,10 +253,16 @@ export default function Usermanagement() {
       boxShadow: "none",
       padding: "5px 10px",
     }),
+    input: (provided) => ({
+      ...provided,
+      color: "#fff",
+    }),
   };
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
+    console.log("id", id);
+    console.log("value", value);
     setFormValues((prevFormValues) => ({
       ...prevFormValues,
       [id]: value,
@@ -220,82 +273,9 @@ export default function Usermanagement() {
     }));
   };
 
-  const handleGroupChange = (selectedOptions) => {
-    setSelectedGroups(selectedOptions.map((option) => option.value));
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      selectedGroups:
-        selectedOptions.length > 0 ? "" : "This field is required.",
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const newErrors = {};
-    Object.keys(formValues).forEach((key) => {
-      if (!formValues[key]) {
-        newErrors[key] = "This field is required.";
-      }
-    });
-    if (selectedGroups.length === 0) {
-      newErrors.selectedGroups = "This field is required.";
-    }
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
-
-    const [first_name, ...rest] = formValues.UserName.trim().split(" ");
-    const last_name = rest.join(" ");
-
-    const payload = {
-      first_name,
-      last_name,
-      email: formValues.email,
-      is_active: active,
-      role: formValues.Role,
-      group_editors_assignment: selectedGroups,
-    };
-
-    console.log("Payload", payload);
-
-    try {
-      let response;
-      if (editingUser) {
-        response = await put(
-          `/user_management/update_user_management/${editingUser.id}`,
-          payload
-        );
-        setSubmitResult("Group updated successfully!");
-      } else {
-        response = await post(
-          "/user_management/create_user_management/",
-          payload
-        );
-        setSubmitResult("Group created successfully!");
-      }
-      togglePanel();
-      fetchUsers();
-      setShowSubmitResult(true);
-      setTimeout(() => {
-        setShowSubmitResult(false);
-        setSubmitResult(null);
-      }, 3000);
-    } catch (error) {
-      console.error("Error creating/updating user:", error);
-      setSubmitResult("Error saving group. Please try again.");
-      setShowSubmitResult(true);
-      setTimeout(() => {
-        setShowSubmitResult(false);
-        setSubmitResult(null);
-      }, 3000); // Hide error message after 3 seconds
-    }
-  };
-
-  const handleEdit = async (e) => {
-    e.preventDefault();
     const newErrors = {};
     Object.keys(formValues).forEach((key) => {
       if (
@@ -307,64 +287,70 @@ export default function Usermanagement() {
     });
     setErrors(newErrors);
 
-    const [first_name, ...rest] = formValues.UserName.trim().split(" ");
-    const last_name = rest.join(" ");
-
-    if (!first_name || !last_name) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        UserName:
-          "Please provide both first and last names separated by a space.",
-      }));
-      return;
-    }
-
-    const id = "a33299d1-cfab-4f5e-b070-32c69b517dda";
-
-    const payload = {
-      first_name,
-      last_name,
-      email: formValues.email,
-      is_active: active,
-      role: formValues.Role,
-      group_editors_assignment: selectedGroups,
-    };
-
-    console.log("Payload", payload);
-    try {
-      const response = await put(
-        `/user_management/update_user_management/${id}`,
-        payload
-      );
-      console.log(response);
-    } catch (error) {
-      console.error("Error updating user:", error);
+    if (Object.keys(newErrors).length === 0) {
+      const payload = {
+        first_name: formValues.firstName,
+        last_name: formValues.lastName,
+        email: formValues.email,
+        is_active: active,
+        role: formValues.Role,
+        group_editors_assignment: formValues.assignedGroups.map(
+          (group) => group.value
+        ),
+      };
+      setIsSubmitting(true);
+      try {
+        let response;
+        if (editingUser) {
+          response = await put(
+            `/user_management/update_user_management/${editingUser.id}/`,
+            payload
+          );
+          setPopup({
+            show: true,
+            message: "User updated successfully",
+            type: "success",
+          });
+        } else {
+          response = await post(
+            "/user_management/create_user_management/",
+            payload
+          );
+          setPopup({
+            show: true,
+            message: "User created successfully",
+            type: "success",
+          });
+        }
+        togglePanel();
+        fetchUsers();
+      } catch (error) {
+        console.error("Error creating/updating user:", error);
+        if (error.response && error.response.status === 409) {
+          setPopup({
+            show: true,
+            message: "Error: Email is already in use.",
+            type: "error",
+          });
+        } else {
+          setPopup({
+            show: true,
+            message: `Error: ${
+              error.response?.data?.message ||
+              "An unexpected error occurred, Please try again!!!"
+            }`,
+            type: "error",
+          });
+        }
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
   const handleDeleteClick = (id) => {
     setUserToDelete(id);
     setIsConfirmDialogOpen(true);
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const response = await get("/user_management/user_management_list/", {
-        page,
-        page_size: itemsPerPage,
-      });
-      const usersWithAssignedUsers = response?.data?.users.map((user) => ({
-        ...user,
-        assignedEditors: user.group_editors_assignment.map(
-          (group) => group.group_name
-        ),
-      }));
-      setUsers(usersWithAssignedUsers);
-      setTotalPages(response?.data?.total_pages || 1);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setTotalPages(1);
-    }
   };
 
   const confirmDelete = async () => {
@@ -376,13 +362,25 @@ export default function Usermanagement() {
     try {
       await del(`/user_management/delete_user_management/${userToDelete}/`);
       console.log("User deleted successfully");
-
+      setPopup({
+        show: true,
+        message: "User deleted successfully",
+        type: "success",
+      });
       fetchUsers();
     } catch (error) {
       console.error(
-        `Error deleting user with ID ${groupToDelete}:`,
+        `Error deleting user with ID ${userToDelete}:`,
         error.response?.data || error.message
       );
+      setPopup({
+        show: true,
+        message: `Error deleting user: ${
+          error.response?.data?.message ||
+          "An unexpected error occurred, Please try again!!!"
+        }`,
+        type: "error",
+      });
     } finally {
       setUserToDelete(null);
       setIsConfirmDialogOpen(false);
@@ -390,7 +388,41 @@ export default function Usermanagement() {
   };
 
   const handleEditClick = (id, rowData) => {
-    togglePanel(rowData);
+    setEditingUser(rowData);
+    setFormValues({
+      firstName: rowData.first_name,
+      lastName: rowData.last_name,
+      email: rowData.email,
+      Role: rowData.role,
+      assignedGroups: rowData.group.map((g) => ({
+        value: g.group.id,
+        label: `${g.group.group_name}`,
+      })),
+    });
+    setIsPanelOpen(true);
+  };
+
+  const handlePasswordReset = async (id) => {
+    try {
+      const response = await put(
+        `/user_management/change_password_request/${id}/`
+      );
+      setPopup({
+        show: true,
+        message: "Password reset request sent successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      setPopup({
+        show: true,
+        message: `Error: ${
+          error.response?.data?.message ||
+          "An unexpected error occurred while resetting the password."
+        }`,
+        type: "error",
+      });
+    }
   };
 
   return (
@@ -435,12 +467,13 @@ export default function Usermanagement() {
                       visibleColumns={columnsConfig.usermanagement}
                       onEditClick={handleEditClick}
                       onDeleteClick={handleDeleteClick}
+                      onPasswordResetClick={handlePasswordReset}
+                      loading={loading}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Page Number at Bottom Right */}
               {/* Pagination Section */}
               <div className={styles.pagination + " p-4"}>
                 <button
@@ -477,42 +510,63 @@ export default function Usermanagement() {
         <SlidingPanel
           isOpen={isPanelOpen}
           onClose={togglePanel}
-          width="w-[700px]" // Fixed width 700px
+          width="w-[700px]"
           style={{
-            height: "685px", // Fixed height
-            top: "0px", // Position from the top
-            left: "998px", // Position from the left
-            gap: "20px", // Gap between child elements
+            height: "685px",
+            top: "0px",
+            left: "998px",
+            gap: "20px",
 
-            opacity: isPanelOpen ? 1 : 0, // Opacity toggles based on panel state
-            transition: "opacity 0.3s ease-in-out", // Smooth opacity transition
+            opacity: isPanelOpen ? 1 : 0,
+            transition: "opacity 0.3s ease-in-out",
           }}
         >
           {/* Header Text */}
           <div className="p-4 pb-0 force-overflow">
-            <h2 className="text-white text-[36px]">Add/Edit Group</h2>
+            <h2 className="text-white text-[36px]">Add/Edit User</h2>
           </div>
           {/* Form Content */}
           <div className="p-6 bg-[#1C2546] text-white rounded-b-lg">
             <form onSubmit={handleSubmit}>
-              {/* User Name Field */}
+              {/* First Name Field */}
               <div className="mb-4">
                 <label
-                  htmlFor="UserName"
+                  htmlFor="firstName"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  User Name*
+                  First Name*
                 </label>
                 <input
                   type="text"
-                  id="UserName"
-                  placeholder="Enter your user Name here"
+                  id="firstName"
+                  placeholder="Enter your first name here"
                   className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.UserName}
+                  value={formValues.firstName}
                   onChange={handleInputChange}
                 />
-                {errors.UserName && (
-                  <span className={styles.error}>{errors.UserName}</span>
+                {errors.firstName && (
+                  <span className={styles.error}>{errors.firstName}</span>
+                )}
+              </div>
+
+              {/* Last Name Field */}
+              <div className="mb-4">
+                <label
+                  htmlFor="lastName"
+                  className="block text-white text-sm font-medium mb-2"
+                >
+                  Last Name*
+                </label>
+                <input
+                  type="text"
+                  id="lastName"
+                  placeholder="Enter your last name here"
+                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
+                  value={formValues.lastName}
+                  onChange={handleInputChange}
+                />
+                {errors.lastName && (
+                  <span className={styles.error}>{errors.lastName}</span>
                 )}
               </div>
 
@@ -526,7 +580,7 @@ export default function Usermanagement() {
                 </label>
                 <input
                   id="email"
-                  placeholder="You're Email goes here"
+                  placeholder="You're email goes here"
                   type="text"
                   className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
                   value={formValues.email}
@@ -534,27 +588,6 @@ export default function Usermanagement() {
                 ></input>
                 {errors.email && (
                   <span className={styles.error}>{errors.email}</span>
-                )}
-              </div>
-
-              {/* Password Field */}
-              <div className="mb-4">
-                <label
-                  htmlFor="Password"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  Password*
-                </label>
-                <input
-                  id="Password"
-                  placeholder="You're Password goes here"
-                  type="text"
-                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.Password}
-                  onChange={handleInputChange}
-                ></input>
-                {errors.Password && (
-                  <span className={styles.error}>{errors.Password}</span>
                 )}
               </div>
 
@@ -566,18 +599,21 @@ export default function Usermanagement() {
                 >
                   User Role*
                 </label>
-                <select
+
+                <CustomSelect
                   id="Role"
-                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
                   value={formValues.Role}
-                  onChange={handleInputChange}
-                >
-                  <option value="" disabled select className="">
-                    Select User Role
-                  </option>
-                  <option value="editor">Editor</option>
-                  <option value="admin">Admin</option>
-                </select>
+                  options={[
+                    { value: "editor", label: "Editor" },
+                    { value: "admin", label: "Admin" },
+                  ]}
+                  onChange={(newRole) =>
+                    handleInputChange({
+                      target: { id: "Role", value: newRole },
+                    })
+                  }
+                  placeholder="Select User Role"
+                />
                 {errors.Role && (
                   <span className={styles.error}>{errors.Role}</span>
                 )}
@@ -589,18 +625,16 @@ export default function Usermanagement() {
                   <Select
                     isMulti
                     options={groups}
-                    value={groups.filter((group) =>
-                      selectedGroups.includes(group.value)
-                    )}
+                    value={formValues.assignedGroups}
                     onChange={handleGroupChange}
                     placeholder="Search and select groups"
                     instanceId="assigned-groups-select"
                     classNamePrefix="select"
                     styles={customStyles}
                   />
-                  {errors.selectedGroups && selectedGroups.length === 0 && (
+                  {errors.assignedGroups && (
                     <span className={styles.error}>
-                      {errors.selectedGroups}
+                      {errors.assignedGroups}
                     </span>
                   )}
                 </div>
@@ -609,6 +643,7 @@ export default function Usermanagement() {
               <div className="flex items-center space-x-2 mb-5">
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    id="status"
                     type="checkbox"
                     className="sr-only peer"
                     checked={active}
@@ -620,49 +655,46 @@ export default function Usermanagement() {
                 <span>{active ? "Active" : "Not Active"}</span>
 
                 <span className="text-white font-medium">
-                  Status<span className="text-blue-300">*</span>
+                  Status*<span className="text-blue-300"></span>
                 </span>
               </div>
 
-              {/* Submit Button and Clear Button */}
               <div className="mb-4 flex justify-start space-x-4">
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
+                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
+                  disabled={isSubmitting}
                 >
-                  {editingUser ? "Update User" : "Submit & Save"}
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center">
+                      <Loading color={"white"} />
+                    </div>
+                  ) : editingUser ? (
+                    "Update User"
+                  ) : (
+                    "Submit & Save"
+                  )}
                 </button>
-
                 {/* Clear Button */}
                 <button
                   type="button"
                   className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"
                   onClick={() => {
-                    setFormValues((prevValues) => ({
-                      ...prevValues, // Retain all previous values
-                      UserName: "",
+                    setFormValues({
+                      firstName: "",
+                      lastName: "",
                       email: "",
-                      Password: "",
                       Role: "",
-                      selectedGroups: [],
-                      status:
-                        prevValues.status === "active" ? "clear" : "active", // Toggle status
-                    }));
-                    console.log("hello this is selected group", selectedGroups);
+                      assignedGroups: [],
+                    });
                     setErrors({});
                   }}
+                  disabled={isSubmitting}
                 >
                   {/* Recycle Icon (Rounded cancel logo) */}
                   <span className="mr-2">
                     <img src="/images/clear_logo.svg" alt="Recycle Icon" />
-
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 3h-2v4h2V3zm4 1l-1.5 1.5M7 4 5.5 5.5M6 9h12c1.1 0 1.99.9 1.99 2L20 19c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V11c0-1.1.9-2 2-2zm1.5 6l1.5 1.5-4 4-1.5-1.5 4-4z"
-                    />
                   </span>
                   Clear
                 </button>
@@ -678,6 +710,14 @@ export default function Usermanagement() {
           title="Delete User"
           message="Are you sure you want to delete this user?"
         />
+
+        {popup.show && (
+          <Popup
+            message={popup.message}
+            type={popup.type}
+            onClose={() => setPopup({ ...popup, show: false })}
+          />
+        )}
       </div>
     </div>
   );

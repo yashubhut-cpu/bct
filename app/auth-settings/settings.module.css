@@ -202,9 +202,6 @@
   .mainContent {
     margin-left: 0px;
   }
-}
-
-@media (max-width: 1140px) {
   .pageContent {
     margin-top: 80px;
   }

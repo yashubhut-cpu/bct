@@ -48,7 +48,7 @@
   margin-top: 0px;
 }
 
-@media (max-width: 1140px) {
+@media (max-width: 1024px) {
   .pageContent {
     margin-top: 80px;
   }
@@ -76,6 +76,7 @@
 
 /* Individual stats cards */
 .statsCard {
+  position: relative;
   width: -webkit-fill-available;
   height: 130px;
   padding: 20px;
@@ -95,7 +96,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #5177ff;
+
 }
 
 /* Stats labels and values */
@@ -116,6 +117,50 @@
   font-weight: 700;
   color: #ffffff;
 }
+
+.statsValueContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tooltipContainer {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.infoIcon {
+  width: 15px;
+  height: 15px;
+}
+
+.infoIcon:hover {
+  filter: brightness(1.4);
+}
+
+.tooltipText {
+  visibility: hidden;
+  background-color: rgba(81, 119, 255, 0.80);
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 5px;
+  position: absolute;
+  left: 65%;
+  bottom: 10%;
+  transform: translateX(-60%);
+  width: max-content;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.tooltipContainer:hover .tooltipText {
+  visibility: visible;
+  opacity: 1;
+}
+
 
 /* Chart containers */
 .chartsContainer {
@@ -205,6 +250,53 @@
   gap: 14px;
 }
 
+/* pagination */
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.paginationButton {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1px solid #A3AED0;
+  background-color: transparent;
+  color: white;
+  font-size: 14px;
+}
+
+.paginationButton.active {
+  border-color: #5177FF;
+  color: #5177FF;
+}
+
+.pageButton {
+  width: 190px;
+  height: 40px;
+  border-radius: 12px;
+  margin-right: 30px;
+  display: flex;
+  gap: 5%;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 14px;
+  font-family: 'Be Vietnam Pro', serif;
+  font-weight: 300;
+  background: #5177FF;
+  cursor: pointer;
+}
+
+.pageButtonActive {
+  border-color: #5177FF;
+  color: #5177FF;
+}
 
 
 .button {

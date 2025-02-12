@@ -1,30 +1,29 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styles from "./dashboard.module.css";
 
-export default function YearSelector({ selectedYear, onYearChange }) {
+export default function WeekSelector({ selectedWeek, onWeekChange }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [years, setYears] = useState([]);
 
-  // Generate a list of years dynamically
-  useEffect(() => {
-    const currentYear = new Date().getFullYear();
-    const yearsList = [];
-    for (let year = currentYear; year >= currentYear - 3; year--) {
-      yearsList.push(year);
-    }
-    setYears(yearsList);
-  }, []);
+  // Define the weeks with correct API values
+  const weeks = [
+    { label: "This Week", value: "current_week" },
+    { label: "Previous Week", value: "previous_week" },
+  ];
 
   // Toggle dropdown visibility
   const toggleDropdown = () => setIsOpen((prevState) => !prevState);
 
-  // Handle year selection
-  const handleYearClick = (year) => {
-    onYearChange(year); // Pass the selected year to the parent component
+  // Handle week selection
+  const handleWeekClick = (week) => {
+    onWeekChange(week); // Pass the selected week value to the parent component
     setIsOpen(false);
   };
+
+  // Find the label for the selected week
+  const selectedWeekLabel =
+    weeks.find((week) => week.value === selectedWeek)?.label || "Select Week";
 
   return (
     <div className={styles.dropdown + " relative"}>
@@ -46,7 +45,7 @@ export default function YearSelector({ selectedYear, onYearChange }) {
           <line x1="8" y1="2" x2="8" y2="6"></line>
           <line x1="3" y1="10" x2="21" y2="10"></line>
         </svg>
-        {selectedYear}
+        {selectedWeekLabel}
       </button>
 
       {isOpen && (
@@ -56,13 +55,13 @@ export default function YearSelector({ selectedYear, onYearChange }) {
             " absolute bg-[#5177FF] p-3 w-full z-30 mt-1 rounded-md text-sm"
           }
         >
-          {years.map((year) => (
+          {weeks.map((week, index) => (
             <li
-              key={year}
+              key={index}
               className={styles.dropdownItem + " cursor-pointer"}
-              onClick={() => handleYearClick(year)}
+              onClick={() => handleWeekClick(week.value)}
             >
-              {year}
+              {week.label}
             </li>
           ))}
         </ul>
@@ -70,4 +69,3 @@ export default function YearSelector({ selectedYear, onYearChange }) {
     </div>
   );
 }
-

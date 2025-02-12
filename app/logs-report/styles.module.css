@@ -218,9 +218,7 @@
   overflow: auto;
   /* Ensure scrollbars don't overflow content */
   height: calc(100vh - 305px);
-
 }
-
 
 @media (max-width: 1440px) {
   .tableContainer {
@@ -488,7 +486,7 @@
   }
 }
 
-@media (max-width: 1140px) {
+@media (max-width: 1024px) {
   .pageContent {
     margin-top: 80px;
   }

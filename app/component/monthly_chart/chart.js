@@ -1,22 +1,49 @@
-import React, { useEffect } from 'react';
-import ApexCharts from 'apexcharts';
-import styles from './chart.module.css';
+import React, { useEffect, useState } from "react";
+import ApexCharts from "apexcharts";
+import styles from "./chart.module.css";
+import { get } from "../../api/base";
 
-const MyMonthlyChartComponent = () => {
+const MyMonthlyChartComponent = ({ selectedYear }) => {
+  const [chartData, setChartData] = useState(null);
+
   useEffect(() => {
-    // Check if the code is running in the client-side (browser)
-    if (typeof window !== 'undefined') {
+    const fetchData = async () => {
+      try {
+        const response = await get(
+          `/dashboard/monthly_alerts/${selectedYear}/`
+        );
+        setChartData(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [selectedYear]); // Re-fetch data when selectedYear changes
+
+  useEffect(() => {
+    if (chartData && typeof window !== "undefined") {
+      const categories = chartData.map((item) => item.month.substring(0, 3)); // Shorten month names to 3 letters
+      const smsData = chartData.map((item) => item.sms);
+      const emailData = chartData.map((item) => item.email);
+      const wordPressData = chartData.map((item) => item.word_press);
+
       const options2 = {
         series: [
           {
-            name: "Revenue",
+            name: "SMS",
             type: "area",
-            data: [34, 65, 46, 68, 49, 61, 42, 44, 78, 52, 63, 67],
+            data: smsData,
           },
           {
-            name: "Expenses",
+            name: "Email",
             type: "line",
-            data: [8, 12, 7, 17, 21, 11, 5, 9, 7, 29, 12, 35],
+            data: emailData,
+          },
+          {
+            name: "WordPress",
+            type: "line",
+            data: wordPressData,
           },
         ],
         chart: { height: 280, type: "line", toolbar: { show: !1 } },
@@ -34,9 +61,7 @@ const MyMonthlyChartComponent = () => {
         },
         markers: { size: [0, 0, 0], strokeWidth: 2, hover: { size: 4 } },
         xaxis: {
-          categories: [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-          ],
+          categories: categories,
           axisTicks: { show: !1 },
           axisBorder: { show: !1 },
         },
@@ -45,7 +70,7 @@ const MyMonthlyChartComponent = () => {
           tickAmount: 4,
           labels: {
             formatter: function (e) {
-              return e + "k";
+              return e;
             },
             offsetX: -15,
           },
@@ -59,40 +84,45 @@ const MyMonthlyChartComponent = () => {
           padding: { top: -10, right: -2, bottom: -10, left: -5 },
         },
         legend: { show: !1 },
-        colors: ["#7f56da", "#22c55e"],
+        colors: ["#7f56da", "#22c55e", "#ff4560"],
         tooltip: {
           shared: !0,
           y: [
             {
               formatter: function (e) {
-                return void 0 !== e ? "$" + e.toFixed(2) + "k" : e;
+                return Number(void 0 !== e ? e.toFixed(2) : "0");
               },
             },
             {
               formatter: function (e) {
-                return void 0 !== e ? "$" + e.toFixed(2) + "k" : e;
+                return Number(void 0 !== e ? e.toFixed(2) : "0");
+              },
+            },
+            {
+              formatter: function (e) {
+                return Number(void 0 !== e ? e.toFixed(2) : "0");
               },
             },
           ],
         },
       };
 
-      const chart1 = new ApexCharts(document.querySelector("#monthly_alert"), options2);
+      const chart1 = new ApexCharts(
+        document.querySelector("#monthly_alert"),
+        options2
+      );
       chart1.render();
 
-      // Cleanup function to destroy the chart when the component unmounts
       return () => {
         if (chart1) {
           chart1.destroy();
         }
       };
     }
-  }, []); // Empty dependency array ensures this runs only once
-
+  }, [chartData]);
 
   return <div className={styles.chart} id="monthly_alert"></div>;
 };
 
 export default MyMonthlyChartComponent;
-
 

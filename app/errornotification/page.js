@@ -1,216 +1,188 @@
 "use client";
-import { useState, useEffect } from "react";
-import Table from "../component/Table";
-import styles from "../errornotification/styles.module.css";
-import { ChevronRight } from "lucide-react";
-import "@fontsource/be-vietnam-pro"; // Defaults to weight 400
-import "@fontsource/be-vietnam-pro/400.css"; // Specify weight
-import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
-import columnsConfig from "../columnsConfig";
-import Sidebar from "../component/Sidebar/sidebar";
-import { useRouter } from "next/navigation";
-import Header from "../component/Header/header";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
+import Table from "../component/Table";
+import Sidebar from "../component/Sidebar/sidebar";
+import Header from "../component/Header/header";
+import styles from "../errornotification/styles.module.css";
+import { formatDate, formatTime } from "../component/FormatDateTime";
+import columnsConfig from "../columnsConfig";
+import "@fontsource/be-vietnam-pro";
+import { get } from "../api/base";
 
 export default function Errornotification() {
-  const router = useRouter(); // Initialize the router
-
-
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+  const [errorDetails, setErrorDetails] = useState([]);
+  const [page, setPage] = useState(1);
+  const [alertPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  // Toggle the sidebar collapse state
-  const toggleSidebar = () => {
-    setIsSidebarActive(!isSidebarActive); // Toggle the state
-  }
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
 
-  const toggleMobileSidebar = () => setIsMobileSidebarActive(!isMobileSidebarActive);
+  const transformPayload = (apiResponse) => {
+    
+    const notificationType = (type) =>
+      ({
+        sms: "SMS",
+        email: "Email",
+        word_press: "WordPress",
+      }[type] || type);
 
+    const capitalize = (name) =>
+      name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : "";
+
+    return apiResponse.notification_event.map((event) => {
+      let affectedChannel = `${capitalize(event.platform_name) || ""} | ${
+        notificationType(event.notification_type) || ""
+      }`;
+
+      if (event.notification_type === "sms" && event.contact_phone_numbers) {
+        affectedChannel += ` | ${event.contact_phone_numbers}`;
+      } else if (
+        event.notification_type === "email" &&
+        event.contact_email_addresses
+      ) {
+        affectedChannel += ` | ${event.contact_email_addresses}`;
+      } else if (event.notification_type === "wordpress") {
+        affectedChannel = `${event.platform_name || ""}`;
+      }
+
+      return {
+        date_time: `${formatDate(event.updated_at)}, ${formatTime(
+          event.updated_at
+        )}`,
+        error_type: event.error_type || "",
+        description: event.error_description || "",
+        affected_channel: affectedChannel,
+        status: event.notification_status || "",
+      };
+    });
+  };
+
+  const fetchErrorDetails = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await get(
+        `/input_trade_alert/get_input_trade_alert_details/${id}/`,
+        {
+          page,
+          page_size: alertPerPage,
+        }
+      );
+
+      const transformedData = transformPayload(response.data);
+      setErrorDetails(transformedData);
+      setTotalPages(response.data.total_pages || 1);
+    } catch (error) {
+      console.error("Error fetching error details", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, page, alertPerPage]);
 
   useEffect(() => {
     document.title = "Error Notification";
-    if (localStorage.getItem("accessToken")) {
-      router.push('/errornotification')
-    } else {
-      router.push('/')
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      router.push("/");
+      return;
     }
-  }, [router]);
+    fetchErrorDetails();
+  }, [fetchErrorDetails, router]);
 
-  const alerts = [{
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Critical",
-    description: "Failed, internal server error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Network Issue",
-    description: "Failed, Network error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Analytical",
-    description: "Gateway Timeout",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Queued",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Syntax Error",
-    description: "Failed, Network error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "In Progress",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Critical",
-    description: "Failed, internal server error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Other",
-    description: "Non-Authoritative Information",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Network Issue",
-    description: "Failed, Network error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Critical",
-    description: "Failed, internal server error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Analytical",
-    description: "Gateway Timeout",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "In Progress",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Network Issue",
-    description: "Failed, Network error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Critical",
-    description: "Failed, internal server error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Other",
-    description: "Non-Authoritative Information",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Network Issue",
-    description: "Failed, Network error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Critical",
-    description: "Failed, internal server error",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "Completed",
-    action: ["Edit", "Delete"]
-  },
-  {
-    date_time: "03/10/2024 8:50pm",
-    error_type: "Analytical",
-    description: "Gateway Timeout",
-    affected_channel: "Lorem ipsum is simply dummy text of the printing",
-    status: "In Progress",
-    action: ["Edit", "Delete"]
-  }
-  ]
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const handleSidebarToggle = () => {
-    setSidebarCollapsed(!isSidebarCollapsed);
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+    }
   };
-
-
 
   return (
     <div className={styles.dashboardContainer}>
-      <Sidebar isCollapsed={isSidebarActive} toggleSidebar={toggleSidebar} isMobileActive={isMobileSidebarActive} />
-      {/* Conditionally applying the class for main content */}
-      <Header toggleSidebar={toggleMobileSidebar} />
+      <Sidebar
+        isCollapsed={isSidebarActive}
+        toggleSidebar={() => setIsSidebarActive(!isSidebarActive)}
+      />
+      <Header
+        toggleSidebar={() => setIsMobileSidebarActive(!isMobileSidebarActive)}
+      />
       <div
-        className={`${isSidebarActive ? styles.mainContent : styles.sidebarActive}`}
+        className={isSidebarActive ? styles.mainContent : styles.sidebarActive}
       >
         <div className={styles.pageContent}>
-        <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
-            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
-              Error Notification
-          </h2>
-
+          <div className="flex justify-between items-center ml-4 mb-3">
+            <h2 className="text-xl sm:text-3xl text-white mt-4 mb-3">
+              Alert Sent
+            </h2>
+            <button
+              className={`${styles.pageButton} bg-[#5177FF] px-5 py-2 text-white`}
+              onClick={() => router.push("/logs-report")}
+            >
+              <img
+                src="/images/back_arrow.svg"
+                alt="Back"
+                className="w-4 h-4 me-1"
+              />
+              Back to Logs
+            </button>
           </div>
+
           <div className="mx-2 mb-4">
-            <div className="bg-[#1C2546] pb-4 rounded-[20px] shadow">
-              {/* Table Section */}
+            <div className="bg-[#1C2546] py-4 rounded-[20px] shadow">
               <div className={styles.tableSection}>
-                <div className={styles.tableContainer + " scrollbar"} id="style-2">
-                  <div className={styles.tableContent + " force-overflow p-4 pt-0"}>
-                    <Table alerts={alerts} visibleColumns={columnsConfig.errortype} />
+                <div
+                  className={`${styles.tableContainer} scrollbar`}
+                  id="style-2"
+                >
+                  <div className={`${styles.tableContent} p-4 pt-0`}>
+                    <Table
+                      alerts={errorDetails}
+                      visibleColumns={columnsConfig.errortype}
+                      loading={loading}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Pagination Section */}
-              <div className={styles.pagination + " p-4"}>
-                <button
-                  className={`${styles.paginationButton} ${styles.active}`}
-                >
-                  1
-                </button>
-                <button className={styles.paginationButton}>2</button>
-                <button className={styles.paginationButton}>3</button>
-                <button className={styles.paginationButton}>...</button>
-                <button className={styles.paginationButton}>80</button>
-                <button className={styles.paginationButton}>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+              {totalPages > 1 && (
+                <div className={styles.pagination + " p-4"}>
+                  <button
+                    className={styles.paginationButton}
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <button
+                      key={index}
+                      className={`${styles.paginationButton} ${
+                        page === index + 1 ? styles.active : ""
+                      }`}
+                      onClick={() => handlePageChange(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                  <button
+                    className={styles.paginationButton}
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
     </div>
-
   );
 }

@@ -14,6 +14,15 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      keyframes: {
+        shrinkWidth: {
+          "0%": { width: "100%" },
+          "100%": { width: "0%" },
+        },
+      },
+      animation: {
+        "shrink-width": "shrinkWidth 2s linear forwards",
+      },
     },
   },
   plugins: [nextui()],

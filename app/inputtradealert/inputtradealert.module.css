@@ -406,7 +406,7 @@
     margin-top: 0px;
 }
 
-@media (max-width: 1140px) {
+@media (max-width: 1024px) {
     .pageContent {
         margin-top: 80px;
     }

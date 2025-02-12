@@ -1,13 +1,12 @@
-/* Imports */
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
-/*functions*/
-export default function Home() {
+export default function Home({ onChange, value }) {
   const editor = useRef(null);
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(value || "");
+
   const config = useMemo(
     () => ({
       uploader: {
@@ -20,17 +19,22 @@ export default function Home() {
     []
   );
 
-  const handleChange = (value) => {
-    setContent(value);
+  const handleChange = (newContent) => {
+    setContent(newContent);
+    onChange(newContent);
   };
+
+  useEffect(() => {
+    setContent(value);
+  }, [value]);
 
   return (
     <>
       <JoditEditor
-        ref={editor} //This is important
-        value={content} //This is important
-        config={config} //Only use when you declare some custom configs
-        onChange={handleChange} //handle the changes
+        ref={editor}
+        value={content}
+        config={config}
+        onChange={handleChange}
         className="w-full h-[70%] mt-10 bg-white"
       />
       <style>
@@ -68,7 +72,7 @@ export default function Home() {
             }
           .jodit-container:not(.jodit_inline){
                 border: 1px solid #999;
-                border-radius: 3px;
+                border-radius: 5px;
                 margin-top: 10px
             }
           .jodit-toolbar__box:not(:empty):not(:empty) {

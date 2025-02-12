@@ -25,12 +25,14 @@ export async function get(url, config = {}) {
       });
   });
 }
+
 export async function patch(url, data, config = {}) {
   return await axiosApi
     .patch(url, { ...data }, { ...config })
     .then((response) => response)
     .catch((error) => error.response);
 }
+
 export async function post(url, data, config = {}) {
   return new Promise((resolve, reject) => {
     axiosApi

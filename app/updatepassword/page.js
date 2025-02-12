@@ -1,101 +1,93 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { post } from "./api/base";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { post } from "../api/base";
+import { useState, useEffect } from "react";
 import "@fontsource/be-vietnam-pro";
 import "@fontsource/be-vietnam-pro/400.css";
 import "@fontsource/be-vietnam-pro/400-italic.css";
-import Loading from "./component/loading";
-import ForgotPasswordModal from "./component/ForgotPasswordModal";
-export default function Home() {
+
+export default function UpdatePassword() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] =
-    useState(false);
+  const [logID, setLogID] = useState(null);
+
+  useEffect(() => {
+    document.title = "Update Password";
+    const logIDParam = searchParams.get("logID");
+    setLogID(logIDParam);
+
+    if (!logIDParam) {
+      setErrorMessage("Invalid request. Missing logID.");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setEmailError("");
     setPasswordError("");
     setErrorMessage("");
 
-    if (!email && !password) {
-      setErrorMessage("Please enter email and password.");
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setErrorMessage("Please fill in all fields.");
       return;
     }
 
-    if (!email) {
-      setEmailError("Please enter email.");
+    if (newPassword !== confirmPassword) {
+      setErrorMessage("New password and confirm password do not match.");
       return;
     }
 
-    if (!password) {
-      setPasswordError("Please enter password.");
+    if (!logID) {
+      setErrorMessage("Invalid request. Missing logID.");
       return;
     }
-    setLoading(true);
+
+    const payload = {
+      old_password: oldPassword,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    };
+
     try {
-      const response = await post("/user_management/login/", {
-        email,
-        password,
-      });
+      const response = await post(
+        `/user_management/update_password/${logID}/`,
+        payload
+      );
+      console.log("API Response:", response);
 
-      console.log(response);
+      if (response.status === 200) {
+        console.log(
+          "Password updated successfully. Redirecting to dashboard..."
+        );
 
-      if (response.status === 200 && response.data?.tokens) {
-        localStorage.setItem("refreshToken", response.data.tokens.refresh);
-        localStorage.setItem("accessToken", response.data.tokens.access);
-        // Debugging log
-
-        if (response.data?.is_first_login === true) {
-          const logID = response?.data?.change_password_request_id;
-
-          router.push(`/updatepassword?logID=${logID}`);
-        } else if (response.data?.is_first_login === false) {
-          router.push("/dashboard");
-        }
+        router.push("/dashboard");
       } else {
-        setErrorMessage(response.data?.message || "Invalid credentials.");
+        setErrorMessage(response.data?.message || "Password update failed.");
       }
     } catch (error) {
-      console.error("Error during login:", error);
-      setErrorMessage("Invalid credentials.");
-    } finally {
-      setLoading(false);
-    }
-
-    const refreshToken = localStorage.getItem("refreshToken");
-    if (refreshToken) {
-      try {
-        const refreshResponse = await post(
-          "/user_management/api/token/refresh/",
-          { refresh: refreshToken }
+      console.error("Error during password update:", error);
+      if (error instanceof Error) {
+        setErrorMessage(
+          `An error occurred during password update: ${error.message}`
         );
-        if (refreshResponse.ok) {
-          localStorage.setItem(
-            "accessToken",
-            refreshResponse.data.token.access
-          );
-          localStorage.setItem(
-            "refreshToken",
-            refreshResponse.data.token.refresh
-          );
-          router.push("/dashboard");
-        }
-      } catch (error) {
-        console.error("Error refreshing token:", error);
-        setErrorMessage("An error occurred while refreshing the session.");
+      } else {
+        setErrorMessage("An unknown error occurred during password update.");
       }
     }
   };
-  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
+
+  const toggleOldPasswordVisibility = () => setShowOldPassword((prev) => !prev);
+  const toggleNewPasswordVisibility = () => setShowNewPassword((prev) => !prev);
+  const toggleConfirmPasswordVisibility = () =>
+    setShowConfirmPassword((prev) => !prev);
 
   return (
     <div
@@ -188,76 +180,18 @@ export default function Home() {
             style={{
               color: "ffffff",
               marginBottom: "30px",
-              fontSize: "40px",
+              fontSize: "35px",
               marginTop: "50px",
             }}
           >
-            Sign In
+            Update Your Password
           </h4>
-          <p
-            style={{
-              color: "#A4A6B3",
-              lineHeight: "16px",
-              marginBottom: "30px",
-            }}
-          >
-            Welcome back! Login to your account.
-          </p>
-          <form onSubmit={handleSubmit}>
-            {/* Username/Email field */}
-            <div style={{ position: "relative", marginBottom: "20px" }}>
-              <label
-                htmlFor="email"
-                style={{
-                  color: "#ffffff",
-                  fontSize: "15px",
-                  marginRight: "10px",
-                  lineHeight: "2.5",
-                }}
-              >
-                Email*
-              </label>
-              <input
-                type="email"
-                placeholder="mail@simmmple.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  paddingRight: "40px",
-                  fontSize: "15px",
-                  border: "1px solid #999999 ",
-                  backgroundColor: "#00000000",
-                  color: "#fff",
-                }}
-              />
-              <img
-                src="/images/password_icon.svg"
-                alt="Email Icon"
-                style={{
-                  position: "absolute",
-                  right: "10px",
-                  top: "73%",
-                  transform: "translateY(-50%)",
-                  width: "20px",
-                  height: "20px",
-                }}
-              />
-              {emailError && (
-                <p
-                  style={{ color: "red", fontSize: "14px", marginTop: "10px" }}
-                >
-                  {emailError}
-                </p>
-              )}
-            </div>
 
-            {/* Password field */}
+          <form onSubmit={handleSubmit}>
+            {/* Old Password field */}
             <div style={{ position: "relative", marginBottom: "20px" }}>
               <label
-                htmlFor="password"
+                htmlFor="oldPassword"
                 style={{
                   color: "#ffffff",
                   fontSize: "15px",
@@ -265,13 +199,13 @@ export default function Home() {
                   lineHeight: "2.8",
                 }}
               >
-                Password*
+                Old Password*
               </label>
               <input
-                type={showPassword ? "text" : "password"} // This changes based on showPassword
+                type={showOldPassword ? "text" : "password"}
                 placeholder="Min. 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -284,19 +218,18 @@ export default function Home() {
                 }}
               />
               <div
-                onClick={togglePasswordVisibility}
+                onClick={toggleOldPasswordVisibility}
                 style={{
                   position: "absolute",
-                  right: "3%",
-                  top: "65%",
+                  right: "10px",
+                  top: "73%",
                   transform: "translateY(-50%)",
                   cursor: "pointer",
                 }}
               >
-                {/* Use img tag to display the correct icon */}
                 <img
                   src={
-                    showPassword
+                    showOldPassword
                       ? "/images/eye_icon.svg"
                       : "/images/close_eye_icon.svg"
                   }
@@ -309,14 +242,135 @@ export default function Home() {
               </div>
               {passwordError && (
                 <p
-                  style={{ color: "red", fontSize: "14px", marginTop: "20px" }}
+                  style={{ color: "red", fontSize: "14px", marginTop: "10px" }}
                 >
                   {passwordError}
                 </p>
               )}
             </div>
 
-            {/* Error message */}
+            {/* New Password field */}
+            <div style={{ position: "relative", marginBottom: "20px" }}>
+              <label
+                htmlFor="newPassword"
+                style={{
+                  color: "#ffffff",
+                  fontSize: "15px",
+                  marginRight: "10px",
+                  lineHeight: "2.8",
+                }}
+              >
+                New Password*
+              </label>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                placeholder="Min. 8 characters"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  fontSize: "15px",
+                  border: "1px solid #999999 ",
+                  paddingRight: "40px",
+                  backgroundColor: "#00000000",
+                  color: "#ffffff",
+                }}
+              />
+              <div
+                onClick={toggleNewPasswordVisibility}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "73%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                }}
+              >
+                <img
+                  src={
+                    showNewPassword
+                      ? "/images/eye_icon.svg"
+                      : "/images/close_eye_icon.svg"
+                  }
+                  alt="Eye Icon"
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
+              </div>
+              {passwordError && (
+                <p
+                  style={{ color: "red", fontSize: "14px", marginTop: "10px" }}
+                >
+                  {passwordError}
+                </p>
+              )}
+            </div>
+
+            {/* Confirm Password field */}
+            <div style={{ position: "relative", marginBottom: "20px" }}>
+              <label
+                htmlFor="confirmPassword"
+                style={{
+                  color: "#ffffff",
+                  fontSize: "15px",
+                  marginRight: "10px",
+                  lineHeight: "2.8",
+                }}
+              >
+                Confirm New Password*
+              </label>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Min. 8 characters"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  fontSize: "15px",
+                  border: "1px solid #999999 ",
+                  paddingRight: "40px",
+                  backgroundColor: "#00000000",
+                  color: "#ffffff",
+                }}
+              />
+              <div
+                onClick={toggleConfirmPasswordVisibility}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "73%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                }}
+              >
+                <img
+                  src={
+                    showConfirmPassword
+                      ? "/images/eye_icon.svg"
+                      : "/images/close_eye_icon.svg"
+                  }
+                  alt="Eye Icon"
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
+              </div>
+              {passwordError && (
+                <p
+                  style={{ color: "red", fontSize: "14px", marginTop: "10px" }}
+                >
+                  {passwordError}
+                </p>
+              )}
+            </div>
+
             {errorMessage && (
               <p
                 style={{ color: "red", fontSize: "14px", marginBottom: "20px" }}
@@ -325,64 +379,15 @@ export default function Home() {
               </p>
             )}
 
-            {/* "Keep me logged in" checkbox and "Forgot password" */}
-            <div
-              className="flex-wrap"
-              style={{
-                marginBottom: "20px",
-                display: "flex",
-                fontSize: "14px",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "20px",
-              }}
-            >
-              {/* Checkbox and label */}
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <input
-                  type="checkbox"
-                  id="keepLoggedIn"
-                  style={{
-                    width: "18px",
-                    height: "18px",
-                    marginRight: "8px",
-                  }}
-                />
-                <label
-                  htmlFor="keepLoggedIn"
-                  style={{
-                    color: "#ffffff",
-                    fontSize: "14px",
-                  }}
-                >
-                  Keep me logged in
-                </label>
-              </div>
-
-              {/* Forgot password link */}
-              <div>
-                <a
-                  href="#"
-                  style={{ color: "#ffffff", fontSize: "14px" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsForgotPasswordModalOpen(true);
-                  }}
-                >
-                  Forgot password?
-                </a>
-              </div>
-            </div>
-
             {/* Submit button */}
             <div style={{ marginBottom: "20px", marginTop: "10px" }}>
-              {/* <button
-                type="submit" // Submit button triggers the form submission
+              <button
+                type="submit"
                 style={{
                   width: "100%",
                   padding: "20px",
                   borderRadius: "8px",
-                  backgroundColor: "#4E71F3", // Blue button color
+                  backgroundColor: "#4E71F3",
                   border: "none",
                   color: "#fff",
                   fontWeight: "bold",
@@ -390,20 +395,7 @@ export default function Home() {
                   fontSize: "16px",
                 }}
               >
-                
-              </button> */}
-              <button
-                type="submit"
-                className="w-full h-[50px] p-[20px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <Loading color="white" />
-                  </div>
-                ) : (
-                  "Sign In"
-                )}
+                Update Password
               </button>
             </div>
           </form>
@@ -428,12 +420,6 @@ export default function Home() {
           />
         </div>
       </div>
-
-      {/* Render the Forgot Password Modal */}
-      <ForgotPasswordModal
-        isOpen={isForgotPasswordModalOpen}
-        onClose={() => setIsForgotPasswordModalOpen(false)}
-      />
     </div>
   );
 }

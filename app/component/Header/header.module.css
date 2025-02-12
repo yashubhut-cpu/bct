@@ -14,14 +14,14 @@
     z-index: 49;
 }
 
-@media (max-width: 1140px) {
+@media (max-width: 1024px) {
     .header {
         margin-left: 0px;
         margin-right: 0px;
     }
 }
 
-@media (min-width: 1140px) {
+@media (min-width: 1024px) {
     .header {
         display: none;
     }

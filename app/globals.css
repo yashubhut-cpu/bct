@@ -227,3 +227,24 @@ td {
 .react-datepicker-popper {
   z-index: 20 !important;
 }
+
+@keyframes shrinkWidth {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-shrink-width {
+  animation: shrinkWidth 2s linear forwards;
+}
+
+.apexcharts-tooltip-title {
+  color: #000000 !important;
+}
+
+.apexcharts-tooltip-series-group {
+  color: #000000 !important;
+}

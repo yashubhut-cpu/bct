@@ -20,8 +20,8 @@ export default function Header({ toggleSidebar }) {
                         width={150}
                         height={20}
                         className="text-white"
+                        loading="lazy"
                     />
-
                 </div>
 
                 {/* Profile Section (Name + Image) */}
