@@ -121,10 +121,18 @@ const TableRow = ({
         </td>
       )}
       {visibleColumns.includes("trade_details") && (
-        <td style={{ fontWeight: "500", color: "#fff" }}>{trade_details}</td>
+        <td
+          className="max-w-48 truncate"
+          style={{ fontWeight: "500", color: "#fff" }}
+        >
+          {trade_details}
+        </td>
       )}
       {visibleColumns.includes("distribution_channel") && (
-        <td style={{ fontWeight: "100", color: "#ffffff" }}>
+        <td
+          className="max-w-48 truncate"
+          style={{ fontWeight: "100", color: "#ffffff" }}
+        >
           {distribution_channel}
         </td>
       )}
@@ -137,7 +145,12 @@ const TableRow = ({
         </td>
       )}
       {visibleColumns.includes("editor_name") && (
-        <td style={{ fontWeight: "100", color: "#ffffff" }}>{editor_name}</td>
+        <td
+          className="max-w-48 truncate"
+          style={{ fontWeight: "100", color: "#ffffff" }}
+        >
+          {editor_name}
+        </td>
       )}
       {visibleColumns.includes("error_type") && (
         <td

@@ -167,7 +167,7 @@ export default function Sidebar({
                 height={20}
                 className={styles.menuItemIcon}
               />
-              Logout
+              <span className={styles.logoutSidebar}>Logout</span>
             </Link>
           </div>
         )}

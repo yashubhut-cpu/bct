@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
@@ -12,7 +12,7 @@ import columnsConfig from "../columnsConfig";
 import "@fontsource/be-vietnam-pro";
 import { get } from "../api/base";
 
-export default function Errornotification() {
+function ErrorNotificationContent() {
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
   const [errorDetails, setErrorDetails] = useState([]);
@@ -26,7 +26,6 @@ export default function Errornotification() {
   const id = searchParams.get("id");
 
   const transformPayload = (apiResponse) => {
-    
     const notificationType = (type) =>
       ({
         sms: "SMS",
@@ -184,5 +183,13 @@ export default function Errornotification() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Errornotification() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ErrorNotificationContent />
+    </Suspense>
   );
 }

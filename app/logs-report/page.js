@@ -384,7 +384,7 @@ export default function Logreport() {
               className="flex flex-wrap items-center space-y-4 md:space-y-0 md:space-x-4 p-4 rounded-lg"
             >
               {/* Date Pickers */}
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap">
                 <div className="relative my-2">
                   <DatePicker
                     selected={formValue.startDate}
@@ -404,7 +404,7 @@ export default function Logreport() {
                   </span>
                 </div>
 
-                <div className="relative my-2">
+                <div className="relative my-2 ml-0 sm:ml-4">
                   <DatePicker
                     selected={formValue.endDate}
                     onChange={(date) =>

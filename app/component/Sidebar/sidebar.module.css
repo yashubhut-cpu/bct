@@ -29,6 +29,8 @@
   }
 }
 
+
+
 .logo {
   display: flex;
   width: 100%;
@@ -163,6 +165,16 @@
   justify-content: center;
 }
 
+.collapsed .logoutSidebar {
+  display: none !important;
+}
+
+.collapsed .dropdown {
+  width: 50px;
+  left: 50%;
+}
+
+
 .menuIconContainer {
   display: flex;
   margin: 10px 10px 0 0;
@@ -197,6 +209,7 @@
   text-decoration: none;
   color: #9ca3af;
   transition: background-color 0.3s ease, color 0.3s ease;
+  justify-content: center;
 }
 
 .dropdownItem:hover {

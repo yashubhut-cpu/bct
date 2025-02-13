@@ -383,7 +383,7 @@ export default function InputTradeAlert() {
                 Input Trade Alert
               </h2>
             </div>
-            <div className="mx-2 me-5 mb-4">
+            <div className="mx-2 mb-4">
               <div className="bg-[#1C2546] p-4 rounded-[20px] shadow">
                 <form onSubmit={handleSubmit}>
                   <div className={styles.fieldSection}>
@@ -406,10 +406,10 @@ export default function InputTradeAlert() {
                       </div>
 
                       {/* Entry Section */}
-                      <div className="entrySection flex flex-col sm:flex-row md:flex-row lg:flex-row gap-4 mb-5 px-5 mt-4">
+                      <div className="entrySection flex flex-col sm:flex-row md:flex-row lg:flex-row gap-4 mb-5 mt-4">
                         {/* Ticker Symbol */}
                         <div className="field2 w-full sm:w-1/3">
-                          <label className="block mb-2 font-semibold">
+                          <label className="block  font-semibold">
                             Ticker Symbol*
                           </label>
                           <input
@@ -429,7 +429,7 @@ export default function InputTradeAlert() {
 
                         {/* Entry Price */}
                         <div className="field3 w-full sm:w-1/3">
-                          <label className="block mb-2 font-semibold">
+                          <label className="block  font-semibold">
                             Entry Price*
                           </label>
                           <input
@@ -449,7 +449,7 @@ export default function InputTradeAlert() {
 
                         {/* Exit Price */}
                         <div className="field4 w-full sm:w-1/3">
-                          <label className="block mb-2 font-semibold">
+                          <label className="block  font-semibold">
                             Exit Price*
                           </label>
                           <input
@@ -552,7 +552,7 @@ export default function InputTradeAlert() {
                       {/* Distribution Checkboxes */}
                       <div className={styles.field9}>
                         <label>Distribution*</label>
-                        <div className={styles.checkBoxBtn}>
+                        <div className={styles.checkBoxBtn + " flex-wrap"}>
                           {/* Email Checkbox */}
                           <div className={styles.checkBoxEmail}>
                             <input

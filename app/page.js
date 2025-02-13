@@ -217,34 +217,36 @@ export default function Home() {
               >
                 Email*
               </label>
-              <input
-                type="email"
-                placeholder="mail@simmmple.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  paddingRight: "40px",
-                  fontSize: "15px",
-                  border: "1px solid #999999 ",
-                  backgroundColor: "#00000000",
-                  color: "#fff",
-                }}
-              />
-              <img
-                src="/images/password_icon.svg"
-                alt="Email Icon"
-                style={{
-                  position: "absolute",
-                  right: "10px",
-                  top: "73%",
-                  transform: "translateY(-50%)",
-                  width: "20px",
-                  height: "20px",
-                }}
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="mail@simmmple.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    paddingRight: "40px",
+                    fontSize: "15px",
+                    border: "1px solid #999999 ",
+                    backgroundColor: "#00000000",
+                    color: "#fff",
+                  }}
+                />
+                <img
+                  src="/images/password_icon.svg"
+                  alt="Email Icon"
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
+              </div>
               {emailError && (
                 <p
                   style={{ color: "red", fontSize: "14px", marginTop: "10px" }}
@@ -267,45 +269,48 @@ export default function Home() {
               >
                 Password*
               </label>
-              <input
-                type={showPassword ? "text" : "password"} // This changes based on showPassword
-                placeholder="Min. 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "8px",
-                  fontSize: "15px",
-                  border: "1px solid #999999 ",
-                  paddingRight: "40px",
-                  backgroundColor: "#00000000",
-                  color: "#ffffff",
-                }}
-              />
-              <div
-                onClick={togglePasswordVisibility}
-                style={{
-                  position: "absolute",
-                  right: "3%",
-                  top: "65%",
-                  transform: "translateY(-50%)",
-                  cursor: "pointer",
-                }}
-              >
-                {/* Use img tag to display the correct icon */}
-                <img
-                  src={
-                    showPassword
-                      ? "/images/eye_icon.svg"
-                      : "/images/close_eye_icon.svg"
-                  }
-                  alt="Eye Icon"
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"} // This changes based on showPassword
+                  placeholder="Min. 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   style={{
-                    width: "20px",
-                    height: "20px",
+                    width: "100%",
+                    padding: "12px",
+                    borderRadius: "8px",
+                    fontSize: "15px",
+                    border: "1px solid #999999 ",
+                    paddingRight: "40px",
+                    backgroundColor: "#00000000",
+                    color: "#ffffff",
+                    position: "relative",
                   }}
                 />
+                <div
+                  onClick={togglePasswordVisibility}
+                  style={{
+                    position: "absolute",
+                    right: "3%",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                  }}
+                >
+                  {/* Use img tag to display the correct icon */}
+                  <img
+                    src={
+                      showPassword
+                        ? "/images/eye_icon.svg"
+                        : "/images/close_eye_icon.svg"
+                    }
+                    alt="Eye Icon"
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                    }}
+                  />
+                </div>
               </div>
               {passwordError && (
                 <p

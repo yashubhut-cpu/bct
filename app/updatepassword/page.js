@@ -1,12 +1,12 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { post } from "../api/base";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import "@fontsource/be-vietnam-pro";
 import "@fontsource/be-vietnam-pro/400.css";
 import "@fontsource/be-vietnam-pro/400-italic.css";
 
-export default function UpdatePassword() {
+function UpdatePasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [oldPassword, setOldPassword] = useState("");
@@ -421,5 +421,13 @@ export default function UpdatePassword() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UpdatePassword() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <UpdatePasswordContent />
+    </Suspense>
   );
 }

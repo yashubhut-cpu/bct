@@ -23,7 +23,7 @@ const CustomSelect = ({ options, value, onChange, placeholder }) => {
   };
 
   return (
-    <div className="relative w-full" ref={dropdownRef}>
+    <div className="relative w-full mt-[10px]" ref={dropdownRef}>
       <div
         className={`w-full flex items-center justify-between px-4 py-2 bg-[#1C2546] text-slate-400 rounded-lg border border-gray-600 cursor-pointer ${
           isOpen ? "ring-2 ring-blue-500" : ""

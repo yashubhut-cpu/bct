@@ -71,72 +71,72 @@
 
 .field1 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    /* margin: 10px; */
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .field2 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    /* margin: 10px; */
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .field3 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    /* margin: 10px; */
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .field4 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    /* margin: 10px; */
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .field5 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    /* margin: 10px; */
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .field6 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    margin-top: 20px;
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .field7 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    margin-top: 20px;
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .field8 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    margin-top: 20px;
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
 .field9 {
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    margin-top: 20px;
     margin-bottom: 0;
     padding-bottom: 0;
 }
@@ -286,8 +286,8 @@
 .button {
     display: flex;
     position: relative;
-    padding: 14px;
-    margin: 10px;
+    /* padding: 14px; */
+    margin-top: 20px;
     gap: 1rem;
 }
 
@@ -312,6 +312,13 @@
     letter-spacing: 0.2px;
 }
 
+
+@media (max-width: 350px) {
+    .submitBtn {
+        width: 230px;
+    }
+}
+
 .previewBtn {
     position: relative;
     display: flex;
@@ -333,6 +340,13 @@
     line-height: 100%;
     letter-spacing: 0.2px;
 }
+
+@media (max-width: 350px) {
+    .previewBtn {
+        width: 230px;
+    }
+}
+
 
 .btn {
     display: inline-flex;
@@ -380,16 +394,19 @@
     text-align: center;
     max-width: 300px;
     width: 80%;
-    animation: fadeOut 3s forwards; /* Animates over 3 seconds */
+    animation: fadeOut 3s forwards;
+    /* Animates over 3 seconds */
 }
 
 @keyframes fadeOut {
     0% {
         opacity: 1;
     }
+
     90% {
         opacity: 1;
     }
+
     100% {
         opacity: 0;
     }
