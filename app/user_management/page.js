@@ -33,7 +33,6 @@ export default function Usermanagement() {
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [popup, setPopup] = useState({
     show: false,
     message: "",
@@ -61,10 +60,8 @@ export default function Usermanagement() {
   useEffect(() => {
     if (editingUser) {
       setActive(editingUser.is_active);
-      setIsEditing(true);
     } else {
       setActive(true);
-      setIsEditing(false);
     }
   }, [editingUser]);
   const toggleSidebar = () => {
@@ -199,17 +196,17 @@ export default function Usermanagement() {
     multiValue: (provided) => ({
       ...provided,
       backgroundColor: "#1C2546",
-      borderRadius: "12px",
+      borderRadius: "8px",
       display: "flex",
       alignItems: "center",
+      border: "1px solid #999",
+      padding: "5px",
     }),
     multiValueLabel: (provided) => ({
       ...provided,
       color: "#fff",
       marginRight: "5px",
-      border: "1px solid",
-      borderRadius: "5px",
-      borderColor: "#999",
+      padding: "3px",
     }),
     multiValueRemove: (provided) => ({
       ...provided,
@@ -218,7 +215,7 @@ export default function Usermanagement() {
       backgroundColor: "transparent",
       borderRadius: "50%",
       border: "1px solid #ff6b6b",
-      padding: "5px",
+      padding: "3px",
       ":hover": {
         backgroundColor: "#ff6b6b",
         color: "#fff",
@@ -229,7 +226,7 @@ export default function Usermanagement() {
       backgroundColor: state.isSelected ? "#1C2546" : "transparent",
       ":hover": {
         backgroundColor: "#2196f3",
-        borderRadius: "5px",
+        borderRadius: "8px",
         color: "#FFF",
       },
       color: "#FFF",
@@ -240,17 +237,25 @@ export default function Usermanagement() {
       backgroundColor: "#1C2546",
       color: "#fff",
       border: "1px solid #A3AED0",
-      borderRadius: "12px",
+      borderRadius: "8px",
     }),
     control: (provided) => ({
       ...provided,
       marginTop: "10px",
-      borderRadius: "12px",
+      borderRadius: "8px",
       backgroundColor: "transparent",
       color: "#fff",
-      borderColor: "#999",
+      borderColor: "rgb(75 85 99)",
       boxShadow: "none",
       padding: "5px 10px",
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: "#fff",
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: "#94A3B8",
     }),
     input: (provided) => ({
       ...provided,

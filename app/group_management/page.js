@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { del, get, post, put } from "../api/base";
 import { ChevronRight, ChevronLeft } from "lucide-react";
@@ -28,7 +27,7 @@ export default function Groupmanagement() {
   const [editingGroup, setEditingGroup] = useState(null);
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
-
+  const [tagLoader, setTagLoader] = useState(false);
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editorsList, setEditorsList] = useState([]);
@@ -78,7 +77,7 @@ export default function Groupmanagement() {
   }, []);
 
   const toggleMobileSidebar = () =>
-    setIsMobileSidebarActive(!isMobileSidebarActive); // Handle year selection change
+    setIsMobileSidebarActive(!isMobileSidebarActive);
 
   useEffect(() => {
     document.title = "Group Management";
@@ -100,7 +99,7 @@ export default function Groupmanagement() {
       setTags([]);
       return;
     }
-
+    setTagLoader(true);
     try {
       const response = await get(apiUrl);
       if (response.status === 200) {
@@ -111,6 +110,8 @@ export default function Groupmanagement() {
       }
     } catch (error) {
       setTags([]);
+    } finally {
+      setTagLoader(false);
     }
   };
 
@@ -214,17 +215,17 @@ export default function Groupmanagement() {
     multiValue: (provided) => ({
       ...provided,
       backgroundColor: "#1C2546",
-      borderRadius: "12px",
+      borderRadius: "8px",
       display: "flex",
       alignItems: "center",
+      border: "1px solid #999",
+      padding: "5px",
     }),
     multiValueLabel: (provided) => ({
       ...provided,
       color: "#fff",
       marginRight: "5px",
-      border: "1px solid",
-      borderRadius: "5px",
-      borderColor: "#999",
+      padding: "3px",
     }),
     multiValueRemove: (provided) => ({
       ...provided,
@@ -233,7 +234,7 @@ export default function Groupmanagement() {
       backgroundColor: "transparent",
       borderRadius: "50%",
       border: "1px solid #ff6b6b",
-      padding: "5px",
+      padding: "3px",
       ":hover": {
         backgroundColor: "#ff6b6b",
         color: "#fff",
@@ -244,7 +245,7 @@ export default function Groupmanagement() {
       backgroundColor: state.isSelected ? "#1C2546" : "transparent",
       ":hover": {
         backgroundColor: "#2196f3",
-        borderRadius: "5px",
+        borderRadius: "8px",
         color: "#FFF",
       },
       color: "#FFF",
@@ -255,12 +256,12 @@ export default function Groupmanagement() {
       backgroundColor: "#1C2546",
       color: "#fff",
       border: "1px solid #A3AED0",
-      borderRadius: "12px",
+      borderRadius: "8px",
     }),
     control: (provided) => ({
       ...provided,
       marginTop: "10px",
-      borderRadius: "12px",
+      borderRadius: "8px",
       backgroundColor: "transparent",
       color: "#fff",
       borderColor: "rgb(75 85 99)",
@@ -311,8 +312,6 @@ export default function Groupmanagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Form values:", formValues);
-
     const newErrors = {};
     Object.keys(formValues).forEach((key) => {
       if (
@@ -336,8 +335,7 @@ export default function Groupmanagement() {
         ),
       };
 
-      console.log("Payload:", payload);
-
+      setLoading(true);
       try {
         let response;
         if (editingGroup) {
@@ -345,7 +343,6 @@ export default function Groupmanagement() {
             `/group_management/update_group/${editingGroup.id}/`,
             payload
           );
-          console.log("Group updated successfully:", response.data);
           setPopup({
             show: true,
             message: "Group updated successfully",
@@ -353,7 +350,6 @@ export default function Groupmanagement() {
           });
         } else {
           response = await post("/group_management/create_group/", payload);
-          console.log("Group created successfully:", response.data);
           setPopup({
             show: true,
             message: "Group created successfully",
@@ -375,6 +371,8 @@ export default function Groupmanagement() {
           }`,
           type: "error",
         });
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -576,7 +574,7 @@ export default function Groupmanagement() {
                   htmlFor="groupName"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Group Name*
+                  Group Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -596,7 +594,7 @@ export default function Groupmanagement() {
                   htmlFor="description"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Description*
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="description"
@@ -616,7 +614,7 @@ export default function Groupmanagement() {
                   htmlFor="status"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Status*
+                  Status <span className="text-red-500">*</span>
                 </label>
                 <CustomSelect
                   value={formValues.status}
@@ -641,7 +639,7 @@ export default function Groupmanagement() {
                   htmlFor="segmentation"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Segmentation Criteria*
+                  Segmentation Criteria <span className="text-red-500">*</span>
                 </label>
                 <CustomSelect
                   options={[
@@ -666,19 +664,44 @@ export default function Groupmanagement() {
                   htmlFor="tagAssigned"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Tag Assigned*
+                  Tag Assigned <span className="text-red-500">*</span>
                 </label>
 
                 <Select
                   isMulti
                   name="tagAssigned"
-                  options={tags.map((tag) => ({
-                    value: tag.id,
-                    label: tag.tag_name,
-                  }))}
+                  options={
+                    !formValues.segmentation
+                      ? [
+                          {
+                            value: "",
+                            label: "Select Segmentation Criteria First",
+                            isDisabled: true,
+                          },
+                        ]
+                      : tags.length > 0
+                      ? [
+                          {
+                            value: "",
+                            label: "Fetching tags...",
+                            isDisabled: true,
+                          },
+                          ...tags.map((tag) => ({
+                            value: tag.id,
+                            label: tag.tag_name,
+                          })),
+                        ]
+                      : [
+                          {
+                            value: "",
+                            label: "No tags available",
+                            isDisabled: true,
+                          },
+                        ]
+                  }
                   value={formValues.tagAssigned}
                   onChange={handleTagsChange}
-                  placeholder="Select Tags"
+                  placeholder={tagLoader ? "Loading tags..." : "Select Tags"}
                   classNamePrefix="select"
                   styles={customStyles}
                 />
@@ -690,7 +713,7 @@ export default function Groupmanagement() {
 
               <div className={styles.field8}>
                 <label className="block text-white text-sm font-medium mb-2">
-                  Assign Editors*
+                  Assign Editors <span className="text-red-500">*</span>
                 </label>
                 <div className={styles.selectWrapper}>
                   <Select
@@ -714,7 +737,8 @@ export default function Groupmanagement() {
               <div className="mb-4 mt-4 flex justify-start space-x-4">
                 <button
                   type="submit"
-                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
+                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
+                  disabled={loading}
                 >
                   {loading ? (
                     <Loading />

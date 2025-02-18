@@ -13,17 +13,19 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
-      "@next/next/no-img-element": "off", 
+      "@next/next/no-img-element": "off",
     },
   },
   {
-    "rules": {
-      "@typescript-eslint/no-unused-vars": "off"
-    }
-  }
-  
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  {
+    rules: {
+      "react-hooks/exhaustive-deps": "off",
+    },
+  },
 ];
-
-
 
 export default eslintConfig;

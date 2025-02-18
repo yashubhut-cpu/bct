@@ -26,6 +26,11 @@ const menuItems = [
     icon: "/images/user-management.svg",
     href: "/user_management",
   },
+  {
+    name: "Tags Management",
+    icon: "/images/tag-icon.svg",
+    href: "/tags_management",
+  },
   { name: "Settings", icon: "/images/settings.svg", href: "/auth_settings" },
 ];
 

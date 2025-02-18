@@ -1,8 +1,9 @@
 import axios from "axios";
 
 export const API_PREFIX = "";
-// const BASE_URL = 'https://bct-trade-alert-backend-production.up.railway.app';
-const BASE_URL = "http://192.168.1.153:8000/";
+// const BASE_URL = "https://bct-trade-alert-backend-production.up.railway.app";
+// const BASE_URL = "http://192.168.1.153:8000/";
+const BASE_URL = "http://54.198.168.167:8000/";
 
 const axiosApi = axios.create({
   baseURL: `${BASE_URL}`,

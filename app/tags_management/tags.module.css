@@ -1,0 +1,143 @@
+.title {
+  font-size: 36px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.section {
+  background: #1c2546;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.inputGroup {
+  margin-bottom: 1.25rem;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.saveButton {
+  padding: 0.625rem 1.5rem;
+  background: #5177ff;
+  color: #fff;
+  width: 180px;
+  height: 45px;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.saveButton:hover {
+  background: #2563eb;
+}
+
+.resetButton {
+  padding: 0.625rem 1.5rem;
+  background: transparent;
+  color: #fff;
+  border: 1px solid #2d3555;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: border-color 0.2s;
+}
+
+.resetButton:hover {
+  border-color: #3b82f6;
+}
+
+@media (max-width: 640px) {
+  .buttonGroup {
+    flex-direction: column;
+  }
+
+  .saveButton,
+  .resetButton {
+    width: 100%;
+  }
+}
+
+.mainContent {
+  background-color: #13182c;
+  height: max-content;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.mainContent.expanded {
+  margin-left: 260px;
+  /* Full sidebar width */
+  /* width: calc(100% - 260px); */
+}
+
+@media (max-width: 1140px) {
+  .mainContent.expanded {
+    margin-left: 0px;
+    margin-top: 90px;
+  }
+}
+
+.mainContent.collapsed {
+  margin-left: 80px;
+  /* Collapsed sidebar width */
+  /* width: calc(100% - 80px); */
+}
+
+.sidebarActive {
+  flex-grow: 1;
+  background-color: #13182c;
+  padding: 10px;
+  overflow-y: auto;
+  width: -webkit-fill-available;
+  margin-left: 260px;
+  padding-bottom: 0;
+  height: 100vh;
+}
+
+@media (max-width: 1024px) {
+  .sidebarActive {
+    margin-left: 0px;
+  }
+}
+
+/* Main content area */
+.mainContent {
+  flex-grow: 1;
+  background-color: #13182c;
+  padding: 10px;
+  overflow-y: auto;
+  margin-left: 80px;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0px;
+  }
+  .pageContent {
+    margin-top: 80px;
+  }
+}
