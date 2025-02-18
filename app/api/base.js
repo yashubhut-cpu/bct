@@ -1,7 +1,8 @@
 import axios from "axios";
 
 export const API_PREFIX = "";
-const BASE_URL = 'https://bct-trade-alert-backend-production.up.railway.app';
+// const BASE_URL = 'https://bct-trade-alert-backend-production.up.railway.app';
+const BASE_URL = "http://192.168.1.153:8000/";
 
 const axiosApi = axios.create({
   baseURL: `${BASE_URL}`,
@@ -102,8 +103,8 @@ export const thunkHandler = async (asyncFn, thunkAPI) => {
 
 export const authHeader = (header = defaultHeaders) => {
   let token = localStorage.getItem("accessToken");
-  console.log("token",token);
-  let headers={};
+  console.log("token", token);
+  let headers = {};
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }

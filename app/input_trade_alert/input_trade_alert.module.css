@@ -2,8 +2,6 @@
     display: flex;
 }
 
-
-
 .sidebarActive {
     flex-grow: 1;
     background-color: #13182c;
@@ -69,73 +67,14 @@
     background: var(--box, #1c2546);
 }
 
-.field1 {
+.field1, .field2, .field3, .field4, .field5 {
     position: relative;
-    /* padding: 14px; */
-    /* margin: 10px; */
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
-.field2 {
+.field6, .field7, .field8, .field9 {
     position: relative;
-    /* padding: 14px; */
-    /* margin: 10px; */
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.field3 {
-    position: relative;
-    /* padding: 14px; */
-    /* margin: 10px; */
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.field4 {
-    position: relative;
-    /* padding: 14px; */
-    /* margin: 10px; */
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.field5 {
-    position: relative;
-    /* padding: 14px; */
-    /* margin: 10px; */
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.field6 {
-    position: relative;
-    /* padding: 14px; */
-    margin-top: 20px;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.field7 {
-    position: relative;
-    /* padding: 14px; */
-    margin-top: 20px;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.field8 {
-    position: relative;
-    /* padding: 14px; */
-    margin-top: 20px;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
-.field9 {
-    position: relative;
-    /* padding: 14px; */
     margin-top: 20px;
     margin-bottom: 0;
     padding-bottom: 0;
@@ -284,9 +223,7 @@
 }
 
 .button {
-    display: flex;
     position: relative;
-    /* padding: 14px; */
     margin-top: 20px;
     gap: 1rem;
 }
@@ -294,7 +231,7 @@
 .submitBtn {
     position: relative;
     display: flex;
-    width: 250px;
+    width: 270px;
     height: 54px;
     justify-content: center;
     align-items: center;
@@ -312,6 +249,9 @@
     letter-spacing: 0.2px;
 }
 
+.submitBtn:hover {
+    filter: brightness(1.1);
+}
 
 @media (max-width: 350px) {
     .submitBtn {
@@ -319,7 +259,7 @@
     }
 }
 
-.previewBtn {
+/* .previewBtn {
     position: relative;
     display: flex;
     width: 250px;
@@ -339,13 +279,13 @@
     font-weight: 500;
     line-height: 100%;
     letter-spacing: 0.2px;
-}
+} */
 
-@media (max-width: 350px) {
+/* @media (max-width: 350px) {
     .previewBtn {
         width: 230px;
     }
-}
+} */
 
 
 .btn {

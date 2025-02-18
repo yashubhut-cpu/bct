@@ -53,13 +53,16 @@ export default function YearSelector({ selectedYear, onYearChange }) {
         <ul
           className={
             styles.dropdownMenu +
-            " absolute bg-[#5177FF] p-3 w-full z-30 mt-1 rounded-md text-sm"
+            " absolute bg-[#2e3e77] p-3 w-full z-30 mt-1 rounded-md text-sm text-[#ffffff]"
           }
         >
           {years.map((year) => (
             <li
               key={year}
-              className={styles.dropdownItem + " cursor-pointer"}
+              className={
+                styles.dropdownItem +
+                " cursor-pointer py-1 border-b border-gray-600"
+              }
               onClick={() => handleYearClick(year)}
             >
               {year}
@@ -70,4 +73,3 @@ export default function YearSelector({ selectedYear, onYearChange }) {
     </div>
   );
 }
-

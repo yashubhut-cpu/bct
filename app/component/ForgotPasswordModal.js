@@ -14,6 +14,11 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
     type: "success",
   });
 
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
@@ -23,8 +28,12 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
       return;
     }
 
+    if (!validateEmail(email)) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
     try {
-      // Call your API to handle forgot password logic
       const response = await post("/user_management/forgot_password/", {
         email,
       });
@@ -37,7 +46,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
       } else {
         setPopup({
           show: true,
-          message: "Something went wrong. Please try again.",
+          message: "Please enter a valid email.",
           type: "error",
         });
       }
@@ -136,8 +145,8 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={() => {
-                onClose(); // Close the modal
-                setEmail(""); // Clear the email input field
+                onClose();
+                setEmail("");
               }}
               style={{
                 padding: "10px 20px",

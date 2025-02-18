@@ -8,18 +8,13 @@ import "@fontsource/be-vietnam-pro/400-italic.css"; // Specify weight and style
 import Sidebar from "../component/Sidebar/sidebar";
 import { useRouter } from "next/navigation";
 import Header from "../component/Header/header";
-import { get, post } from "../api/base";
+import { get } from "../api/base";
 
 export default function AuthSettings() {
   const [keepClientId, setKeepClientId] = useState("");
   const [keepClientSecret, setKeepClientSecret] = useState("");
   const [highLevelClientId, setHighLevelClientId] = useState("");
   const [highLevelClientSecret, setHighLevelClientSecret] = useState("");
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const handleSidebarToggle = () => {
-    setSidebarCollapsed(!isSidebarCollapsed);
-  };
-
   const [isKeapSecretVisible, setKeapSecretVisible] = useState(false);
   const [isHighLevelSecretVisible, setHighLevelSecretVisible] = useState(false);
 
@@ -35,7 +30,7 @@ export default function AuthSettings() {
   useEffect(() => {
     document.title = "Auth-Settings";
     if (localStorage.getItem("accessToken")) {
-      router.push("/auth-settings");
+      router.push("/auth_settings");
     } else {
       router.push("/");
     }

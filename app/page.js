@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { post } from "./api/base";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "@fontsource/be-vietnam-pro";
 import "@fontsource/be-vietnam-pro/400.css";
 import "@fontsource/be-vietnam-pro/400-italic.css";
@@ -18,6 +18,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] =
     useState(false);
+
+  useEffect(() => {
+    document.title = "BCT Alert";
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -324,79 +328,40 @@ export default function Home() {
             {/* Error message */}
             {errorMessage && (
               <p
-                style={{ color: "red", fontSize: "14px", marginBottom: "20px" }}
+                style={{
+                  color: "red",
+                  fontSize: "14px",
+                  marginBottom: "20px",
+                  lineHeight: "normal",
+                }}
               >
                 {errorMessage}
               </p>
             )}
 
-            {/* "Keep me logged in" checkbox and "Forgot password" */}
-            <div
-              className="flex-wrap"
-              style={{
-                marginBottom: "20px",
-                display: "flex",
-                fontSize: "14px",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "20px",
-              }}
-            >
-              {/* Checkbox and label */}
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <input
-                  type="checkbox"
-                  id="keepLoggedIn"
-                  style={{
-                    width: "18px",
-                    height: "18px",
-                    marginRight: "8px",
-                  }}
-                />
-                <label
-                  htmlFor="keepLoggedIn"
-                  style={{
-                    color: "#ffffff",
-                    fontSize: "14px",
-                  }}
-                >
-                  Keep me logged in
-                </label>
-              </div>
-
-              {/* Forgot password link */}
-              <div>
-                <a
-                  href="#"
-                  style={{ color: "#ffffff", fontSize: "14px" }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsForgotPasswordModalOpen(true);
-                  }}
-                >
-                  Forgot password?
-                </a>
-              </div>
+            {/* Forgot password link */}
+            <div>
+              <a
+                href="#"
+                style={{
+                  color: "#ffffff",
+                  fontSize: "14px",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginTop: "25px",
+                  marginBottom: "25px",
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsForgotPasswordModalOpen(true);
+                }}
+              >
+                Forgot password?
+              </a>
             </div>
 
             {/* Submit button */}
-            <div style={{ marginBottom: "20px", marginTop: "10px" }}>
-              {/* <button
-                type="submit" // Submit button triggers the form submission
-                style={{
-                  width: "100%",
-                  padding: "20px",
-                  borderRadius: "8px",
-                  backgroundColor: "#4E71F3", // Blue button color
-                  border: "none",
-                  color: "#fff",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                }}
-              >
-                
-              </button> */}
+            <div style={{ marginBottom: "20px", marginTop: "20px" }}>
               <button
                 type="submit"
                 className="w-full h-[50px] p-[20px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"

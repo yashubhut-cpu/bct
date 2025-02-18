@@ -125,4 +125,3 @@ const MyMonthlyChartComponent = ({ selectedYear }) => {
 };
 
 export default MyMonthlyChartComponent;
-

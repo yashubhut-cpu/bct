@@ -8,11 +8,6 @@ export default function Header({ toggleSidebar }) {
         <div className={styles.header}>
             <div className={styles.headerSection}>
 
-                {/* <input
-                        type="text"
-                        placeholder="Search"
-                        className="w-full pl-12 pr-4 py-3 rounded-full bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    /> */}
                 <div className={styles.searchIcon}>
                     <Image
                         src="/images/bct_small.svg" // Replace with the actual path of the bell icon

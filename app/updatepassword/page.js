@@ -2,9 +2,12 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { post } from "../api/base";
 import { useState, useEffect, Suspense } from "react";
+import Popup from "../component/Popup";
+import Loading from "../component/loading";
 import "@fontsource/be-vietnam-pro";
 import "@fontsource/be-vietnam-pro/400.css";
 import "@fontsource/be-vietnam-pro/400-italic.css";
+import { type } from "os";
 
 function UpdatePasswordContent() {
   const router = useRouter();
@@ -18,6 +21,12 @@ function UpdatePasswordContent() {
   const [errorMessage, setErrorMessage] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [logID, setLogID] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [popup, setPopup] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   useEffect(() => {
     document.title = "Update Password";
@@ -55,32 +64,37 @@ function UpdatePasswordContent() {
       new_password: newPassword,
       confirm_password: confirmPassword,
     };
-
+    setLoading(true);
     try {
       const response = await post(
         `/user_management/update_password/${logID}/`,
         payload
       );
+
       console.log("API Response:", response);
 
       if (response.status === 200) {
-        console.log(
-          "Password updated successfully. Redirecting to dashboard..."
-        );
-
+        setPopup({
+          show: true,
+          message: "Password updated successfully. Redirecting to dashboard...",
+          type: "success",
+        });
         router.push("/dashboard");
       } else {
-        setErrorMessage(response.data?.message || "Password update failed.");
+        setPopup({
+          show: true,
+          message: "Password update failed.",
+          type: "error",
+        });
       }
     } catch (error) {
-      console.error("Error during password update:", error);
-      if (error instanceof Error) {
-        setErrorMessage(
-          `An error occurred during password update: ${error.message}`
-        );
-      } else {
-        setErrorMessage("An unknown error occurred during password update.");
-      }
+      setPopup({
+        show: true,
+        message: "Something went wrong. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -383,25 +397,22 @@ function UpdatePasswordContent() {
             <div style={{ marginBottom: "20px", marginTop: "10px" }}>
               <button
                 type="submit"
-                style={{
-                  width: "100%",
-                  padding: "20px",
-                  borderRadius: "8px",
-                  backgroundColor: "#4E71F3",
-                  border: "none",
-                  color: "#fff",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                }}
+                className="w-full h-[50px] p-[20px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
+                disabled={loading}
               >
-                Update Password
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <Loading color="white" position="top" />
+                  </div>
+                ) : (
+                  "Update Password"
+                )}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Background image illustration */}
+        {/* Background image illustration */} 
         <div
           className="background-illustration lg:block hidden"
           style={{
@@ -419,6 +430,23 @@ function UpdatePasswordContent() {
             }}
           />
         </div>
+
+        {/* popup */}
+        {popup.show && (
+          <Popup
+            message={popup.message}
+            type={popup.type}
+            onClose={() => {
+              setPopup({ ...popup, show: false });
+              if (popup.type === "success") {
+                onClose();
+                setOldPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

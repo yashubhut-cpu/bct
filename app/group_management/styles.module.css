@@ -206,16 +206,10 @@
   .sidebarActive {
     margin-left: 0px;
   }
-}
-
-
-
-@media (max-width: 1024px) {
   .pageContent {
     margin-top: 80px;
   }
 }
-
 
 /* Main content area */
 .mainContent {
@@ -229,7 +223,6 @@
 @media(max-width: 1024px) {
   .mainContent {
     margin-left: 0px;
-    margin-top: 90px;
   }
 }
 

@@ -36,6 +36,185 @@ function formatDateToDDMMYYYY(isoDate) {
   return `${day}-${month}-${year}`;
 }
 
+const Table = ({
+  alerts,
+  visibleColumns,
+  onEditClick,
+  onDeleteClick,
+  onPasswordResetClick,
+  onEyeIconClick,
+  loading,
+}) => {
+  const [allChecked, setAllChecked] = useState(false);
+  const [selectedRows, setSelectedRows] = useState(new Set());
+
+  const handleSelectAll = () => {
+    const newCheckedState = !allChecked;
+    setAllChecked(newCheckedState);
+
+    const updatedSelectedRows = new Set(selectedRows);
+    if (newCheckedState) {
+      alerts.forEach((alert) => updatedSelectedRows.add(alert.id));
+    } else {
+      alerts.forEach((alert) => updatedSelectedRows.delete(alert.id));
+    }
+    setSelectedRows(updatedSelectedRows);
+
+    console.log("Select All:", newCheckedState);
+    console.log("Updated selectedRows:", updatedSelectedRows);
+  };
+
+  const handleRowChange = (id) => {
+    const updatedSelectedRows = new Set(selectedRows);
+    if (updatedSelectedRows.has(id)) {
+      updatedSelectedRows.delete(id); // Deselect the row
+    } else {
+      updatedSelectedRows.add(id); // Select the row
+    }
+    setSelectedRows(updatedSelectedRows);
+
+    console.log(`Row ${id} checkbox toggled:`, updatedSelectedRows.has(id));
+    console.log("Updated selectedRows:", updatedSelectedRows);
+  };
+
+  return (
+    <div>
+      <table className="w-full text-left text-sm text-white">
+        {/* Table Header - Always Visible */}
+        <thead className="sticky top-0 z-10" style={{ background: "#1C2546" }}>
+          <tr>
+            {visibleColumns.includes("checkbox") && (
+              <th className="border-b">
+                <Checkbox
+                  id={"selectAll"}
+                  checked={allChecked}
+                  onChange={handleSelectAll}
+                />
+              </th>
+            )}
+            {visibleColumns.includes("title") && (
+              <th className="border-b">TRADE TITLE</th>
+            )}
+            {visibleColumns.includes("customer_name") && (
+              <th className="border-b">CUSTOMER NAME</th>
+            )}
+            {visibleColumns.includes("trade_details") && (
+              <th className="border-b">TRADE DETAILS</th>
+            )}
+            {visibleColumns.includes("distribution_channel") && (
+              <th className="border-b">DISTRIBUTION CHANNEL</th>
+            )}
+            {visibleColumns.includes("groupName") && (
+              <th className="border-b">GROUP NAME</th>
+            )}
+            {visibleColumns.includes("editor_name") && (
+              <th className="border-b">EDITOR NAME/ID</th>
+            )}
+            {visibleColumns.includes("error_type") && (
+              <th className="border-b">ERROR TYPE</th>
+            )}
+            {visibleColumns.includes("description") && (
+              <th className="border-b">DESCRIPTION</th>
+            )}
+            {visibleColumns.includes("name") && (
+              <th className="border-b">NAME</th>
+            )}
+
+            {visibleColumns.includes("email") && (
+              <th className="border-b">EMAIL</th>
+            )}
+            {visibleColumns.includes("role") && (
+              <th className="border-b">ROLE</th>
+            )}
+            {visibleColumns.includes("assignedGroups") && (
+              <th className="border-b">ASSIGNED GROUPS</th>
+            )}
+            {visibleColumns.includes("assignedEditors") && (
+              <th className="border-b">ASSIGNED EDITORS</th>
+            )}
+            {visibleColumns.includes("ticker") && (
+              <th className="border-b">TICKER SYMBOL</th>
+            )}
+            {visibleColumns.includes("entryPrice") && (
+              <th className="border-b">ENTRY PRICE</th>
+            )}
+            {visibleColumns.includes("exitPrice") && (
+              <th className="border-b">EXIT PRICE</th>
+            )}
+            {visibleColumns.includes("affected_channel") && (
+              <th className="border-b">AFFECTED CHANNEL</th>
+            )}
+            {visibleColumns.includes("status") && (
+              <th className="border-b">STATUS</th>
+            )}
+            {visibleColumns.includes("date_time") && (
+              <th className="border-b">
+                <DateTime date_time="DATE & TIME" />
+              </th>
+            )}
+            {visibleColumns.includes("createdDate") && (
+              <th className="border-b">CREATED DATE</th>
+            )}
+            {visibleColumns.includes("date") && (
+              <th className="border-b">DATE</th>
+            )}
+            {visibleColumns.includes("action") && (
+              <th className="border-b">ACTION</th>
+            )}
+          </tr>
+        </thead>
+
+        {/* Table Body - Conditional Rendering */}
+        <tbody className="space-y-2">
+          {loading ? (
+            <tr>
+              <td colSpan={visibleColumns.length} className="text-center py-4">
+                <Loading position="top" />
+              </td>
+            </tr>
+          ) : (
+            alerts.map((alert, index) => (
+              <TableRow
+                key={alert.id}
+                id={alert.id}
+                checked={selectedRows.has(alert.id)}
+                onChange={() => handleRowChange(alert.id)}
+                title={alert.title}
+                trade_details={alert.trade_details}
+                distribution_channel={alert.distribution_channel}
+                groupName={alert.group_name}
+                editor_name={alert.editor_name}
+                customer_name={alert.customer_name}
+                error_type={alert.error_type}
+                description={alert.description}
+                name={`${alert.first_name} ${alert.last_name}`}
+                email={alert.email}
+                role={alert.role}
+                assignedGroups={alert.group}
+                assignedEditors={alert.editor_assigned_groups}
+                ticker={alert.ticker}
+                entryPrice={alert.entryPrice}
+                exitPrice={alert.exitPrice}
+                affected_channel={alert.affected_channel}
+                createdDate={alert.created_at}
+                status={alert.is_active || alert.status}
+                date_time={alert.date_time}
+                date={alert.date}
+                visibleColumns={visibleColumns}
+                apiID={alert.id}
+                onEditClick={() => onEditClick(alert.id, alert)}
+                onDeleteClick={() => onDeleteClick(alert.id)}
+                onPasswordResetClick={() => onPasswordResetClick(alert.id)}
+                onEyeIconClick={() => onEyeIconClick(alert.id)}
+              />
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 const TableRow = ({
   id,
   title,
@@ -43,6 +222,7 @@ const TableRow = ({
   trade_details,
   distribution_channel,
   groupName,
+  customer_name,
   editor_name,
   error_type,
   description,
@@ -83,19 +263,17 @@ const TableRow = ({
             <span className="text-white">Not Active</span>
           </div>
         );
-      case "Active":
+      case "completed":
         return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
-      case "Completed":
-        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
-      case "Hold":
+      case "hold":
         return <ClockIcon className="w-5 h-5 text-blue-500" />;
-      case "In Progress":
+      case "scheduled":
         return <ClockIcon className="w-5 h-5 text-yellow-500" />;
-      case "Queued":
+      case "queued":
         return (
           <img src="/images/Queued.svg" alt="Queued" className="w-5 h-5" />
         );
-      case "Not Active":
+      case "failed":
         return <XCircleIcon className="w-5 h-5 text-red-500" />;
       default:
         return null;
@@ -112,14 +290,7 @@ const TableRow = ({
       {visibleColumns.includes("title") && (
         <td style={{ fontWeight: "500", color: "#fff" }}>{title}</td>
       )}
-      {visibleColumns.includes("date_time") && (
-        <td
-          className="max-w-64 truncate"
-          style={{ fontWeight: "100", color: "#ffffff" }}
-        >
-          <DateTime date_time={date_time} />
-        </td>
-      )}
+
       {visibleColumns.includes("trade_details") && (
         <td
           className="max-w-48 truncate"
@@ -152,6 +323,16 @@ const TableRow = ({
           {editor_name}
         </td>
       )}
+      {visibleColumns.includes("customer_name") && (
+        <td
+          className="max-w-48 truncate"
+          style={{ fontWeight: "500", color: "#fff" }}
+        >
+          {" "}
+          {customer_name}
+        </td>
+      )}
+
       {visibleColumns.includes("error_type") && (
         <td
           className="max-w-48 truncate"
@@ -238,6 +419,16 @@ const TableRow = ({
           </div>
         </td>
       )}
+
+      {visibleColumns.includes("date_time") && (
+        <td
+          className="max-w-64 truncate"
+          style={{ fontWeight: "100", color: "#ffffff" }}
+        >
+          <DateTime date_time={date_time} />
+        </td>
+      )}
+
       {visibleColumns.includes("createdDate") && (
         <td
           className="max-w-48 truncate"
@@ -246,9 +437,11 @@ const TableRow = ({
           {formatDateToDDMMYYYY(createdDate)}
         </td>
       )}
+
       {visibleColumns.includes("date") && (
         <td style={{ fontWeight: "100", color: "#ffffff" }}>{date}</td>
       )}
+
       {visibleColumns.includes("action") && (
         <td className="py-1 px-1 action-row">
           <div className="flex flex-row justify-around column-container">
@@ -288,180 +481,6 @@ const TableRow = ({
         </td>
       )}
     </tr>
-  );
-};
-
-const Table = ({
-  alerts,
-  visibleColumns,
-  onEditClick,
-  onDeleteClick,
-  onPasswordResetClick,
-  onEyeIconClick,
-  loading,
-}) => {
-  const [allChecked, setAllChecked] = useState(false);
-  const [selectedRows, setSelectedRows] = useState(new Set());
-
-  const handleSelectAll = () => {
-    const newCheckedState = !allChecked;
-    setAllChecked(newCheckedState);
-
-    const updatedSelectedRows = new Set(selectedRows);
-    if (newCheckedState) {
-      alerts.forEach((alert) => updatedSelectedRows.add(alert.id));
-    } else {
-      alerts.forEach((alert) => updatedSelectedRows.delete(alert.id));
-    }
-    setSelectedRows(updatedSelectedRows);
-
-    console.log("Select All:", newCheckedState);
-    console.log("Updated selectedRows:", updatedSelectedRows);
-  };
-
-  const handleRowChange = (id) => {
-    const updatedSelectedRows = new Set(selectedRows);
-    if (updatedSelectedRows.has(id)) {
-      updatedSelectedRows.delete(id); // Deselect the row
-    } else {
-      updatedSelectedRows.add(id); // Select the row
-    }
-    setSelectedRows(updatedSelectedRows);
-
-    console.log(`Row ${id} checkbox toggled:`, updatedSelectedRows.has(id));
-    console.log("Updated selectedRows:", updatedSelectedRows);
-  };
-
-  return (
-    <div>
-      <table className="w-full text-left text-sm text-white">
-        {/* Table Header - Always Visible */}
-        <thead className="sticky top-0 z-10" style={{ background: "#1C2546" }}>
-          <tr>
-            {visibleColumns.includes("checkbox") && (
-              <th className="border-b">
-                <Checkbox
-                  id={"selectAll"}
-                  checked={allChecked}
-                  onChange={handleSelectAll}
-                />
-              </th>
-            )}
-            {visibleColumns.includes("title") && (
-              <th className="border-b">TRADE TITLE</th>
-            )}
-            {visibleColumns.includes("date_time") && (
-              <th className="border-b">
-                <DateTime date_time="DATE & TIME" />
-              </th>
-            )}
-            {visibleColumns.includes("trade_details") && (
-              <th className="border-b">TRADE DETAILS</th>
-            )}
-            {visibleColumns.includes("distribution_channel") && (
-              <th className="border-b">DISTRIBUTION CHANNEL</th>
-            )}
-            {visibleColumns.includes("groupName") && (
-              <th className="border-b">GROUP NAME</th>
-            )}
-            {visibleColumns.includes("editor_name") && (
-              <th className="border-b">EDITOR NAME/ID</th>
-            )}
-            {visibleColumns.includes("error_type") && (
-              <th className="border-b">ERROR TYPE</th>
-            )}
-            {visibleColumns.includes("description") && (
-              <th className="border-b">DESCRIPTION</th>
-            )}
-            {visibleColumns.includes("name") && (
-              <th className="border-b">NAME</th>
-            )}
-            {visibleColumns.includes("email") && (
-              <th className="border-b">EMAIL</th>
-            )}
-            {visibleColumns.includes("role") && (
-              <th className="border-b">ROLE</th>
-            )}
-            {visibleColumns.includes("assignedGroups") && (
-              <th className="border-b">ASSIGNED GROUPS</th>
-            )}
-            {visibleColumns.includes("assignedEditors") && (
-              <th className="border-b">ASSIGNED EDITORS</th>
-            )}
-            {visibleColumns.includes("ticker") && (
-              <th className="border-b">TICKER SYMBOL</th>
-            )}
-            {visibleColumns.includes("entryPrice") && (
-              <th className="border-b">ENTRY PRICE</th>
-            )}
-            {visibleColumns.includes("exitPrice") && (
-              <th className="border-b">EXIT PRICE</th>
-            )}
-            {visibleColumns.includes("affected_channel") && (
-              <th className="border-b">AFFECTED CHANNEL</th>
-            )}
-            {visibleColumns.includes("status") && (
-              <th className="border-b">STATUS</th>
-            )}
-            {visibleColumns.includes("createdDate") && (
-              <th className="border-b">CREATED DATE</th>
-            )}
-            {visibleColumns.includes("date") && (
-              <th className="border-b">DATE</th>
-            )}
-            {visibleColumns.includes("action") && (
-              <th className="border-b">ACTION</th>
-            )}
-          </tr>
-        </thead>
-
-        {/* Table Body - Conditional Rendering */}
-        <tbody className="space-y-2">
-          {loading ? (
-            <tr>
-              <td colSpan={visibleColumns.length} className="text-center py-4">
-                <Loading />
-              </td>
-            </tr>
-          ) : (
-            alerts.map((alert, index) => (
-              <TableRow
-                key={alert.id}
-                id={alert.id}
-                checked={selectedRows.has(alert.id)}
-                onChange={() => handleRowChange(alert.id)}
-                title={alert.title}
-                date_time={alert.date_time}
-                trade_details={alert.trade_details}
-                distribution_channel={alert.distribution_channel}
-                groupName={alert.group_name}
-                editor_name={alert.editor_name}
-                error_type={alert.error_type}
-                description={alert.description}
-                name={`${alert.first_name} ${alert.last_name}`}
-                email={alert.email}
-                role={alert.role}
-                assignedGroups={alert.group}
-                assignedEditors={alert.editor_assigned_groups}
-                ticker={alert.ticker}
-                entryPrice={alert.entryPrice}
-                exitPrice={alert.exitPrice}
-                affected_channel={alert.affected_channel}
-                createdDate={alert.created_at}
-                status={alert.is_active || alert.status}
-                date={alert.date}
-                visibleColumns={visibleColumns}
-                apiID={alert.id}
-                onEditClick={() => onEditClick(alert.id, alert)}
-                onDeleteClick={() => onDeleteClick(alert.id)}
-                onPasswordResetClick={() => onPasswordResetClick(alert.id)}
-                onEyeIconClick={() => onEyeIconClick(alert.id, alert)}
-              />
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
   );
 };
 

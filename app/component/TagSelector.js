@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { RiArrowDropDownLine } from "react-icons/ri";
+import { RiArrowDropDownLine, RiCloseLine } from "react-icons/ri";
 
 const TagSelector = ({ options, value, onChange, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
+
+  const [selectedValues, setSelectedValues] = useState(value || []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -21,34 +23,62 @@ const TagSelector = ({ options, value, onChange, placeholder }) => {
   }, []);
 
   const handleOptionSelect = (optionValue) => {
-    onChange(optionValue);
+    const newSelectedValues = selectedValues.includes(optionValue)
+      ? selectedValues.filter((val) => val !== optionValue)
+      : [...selectedValues, optionValue];
+
+    setSelectedValues(newSelectedValues);
+    onChange(newSelectedValues);
     setIsOpen(false);
   };
 
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleRemoveTag = (tagValue) => {
+    const newSelectedValues = selectedValues.filter((val) => val !== tagValue);
+    setSelectedValues(newSelectedValues);
+    onChange(newSelectedValues);
+  };
+
+  const filteredOptions = options.filter(
+    (option) =>
+      option.label.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !selectedValues.includes(option.value)
   );
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
       <div
-        className={`w-full flex items-center justify-between px-4 py-2 bg-[#1C2546] text-slate-400 rounded-lg border border-gray-600 cursor-pointer ${
+        className={`w-full flex items-center justify-between px-4 py-[0.5rem] bg-[#1C2546] text-slate-400 rounded-[8px] border border-[#4b5563] cursor-pointer ${
           isOpen ? "ring-2 ring-blue-500" : ""
         }`}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        {value ? (
-          <span className="text-slate-400">
-            {options.find((opt) => opt.value === value)?.label}
-          </span>
-        ) : (
-          <span className="text-slate-400">{placeholder}</span>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {selectedValues.length > 0 ? (
+            selectedValues.map((val) => (
+              <div
+                key={val}
+                className="flex items-center gap-2 bg-[#2E3A5E] text-white px-3 py-1 rounded-full text-sm font-medium"
+              >
+                {options.find((opt) => opt.value === val)?.label}
+                <RiCloseLine
+                  className="cursor-pointer hover:text-red-400"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveTag(val);
+                  }}
+                />
+              </div>
+            ))
+          ) : (
+            <span className="text-slate-400">{placeholder}</span>
+          )}
+        </div>
         <RiArrowDropDownLine className="w-8 h-8 text-gray-400" />
       </div>
 
+      {/* dropdown */}
       {isOpen && (
-        <div className="absolute z-10 mt-2 w-full bg-[#1C2546] border border-gray-600 rounded-lg shadow-lg max-h-48 overflow-auto">
+        <div className="absolute z-10 mt-2 w-full bg-[#1C2546] border border-[#4b5563] rounded-[8px] shadow-lg max-h-48 overflow-auto">
           {options.length === 0 ? (
             <div className="p-3 text-slate-400">
               Select Segmentation Criteria First

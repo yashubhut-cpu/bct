@@ -2,19 +2,19 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-
+import { formatDate, formatTime } from "../component/FormatDateTime";
+import { get } from "../api/base";
 import Table from "../component/Table";
 import Sidebar from "../component/Sidebar/sidebar";
 import Header from "../component/Header/header";
-import styles from "../errornotification/styles.module.css";
-import { formatDate, formatTime } from "../component/FormatDateTime";
+import styles from "./styles.module.css";
 import columnsConfig from "../columnsConfig";
 import "@fontsource/be-vietnam-pro";
-import { get } from "../api/base";
 
 function ErrorNotificationContent() {
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+
   const [errorDetails, setErrorDetails] = useState([]);
   const [page, setPage] = useState(1);
   const [alertPerPage] = useState(10);
@@ -24,6 +24,25 @@ function ErrorNotificationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+
+  const toggleSidebar = () => {
+    setIsSidebarActive(!isSidebarActive);
+    localStorage.setItem("isSidebarActive", !isSidebarActive);
+  };
+
+  useEffect(() => {
+    const isSidebarActive = localStorage.getItem("isSidebarActive");
+    if (isSidebarActive === "true") {
+      localStorage.setItem("isSidebarActive", true);
+      setIsSidebarActive(true);
+    } else {
+      localStorage.setItem("isSidebarActive", false);
+      setIsSidebarActive(false);
+    }
+  }, []);
+
+  const toggleMobileSidebar = () =>
+    setIsMobileSidebarActive(!isMobileSidebarActive); // Handle year selection change
 
   const transformPayload = (apiResponse) => {
     const notificationType = (type) =>
@@ -53,13 +72,14 @@ function ErrorNotificationContent() {
       }
 
       return {
-        date_time: `${formatDate(event.updated_at)}, ${formatTime(
-          event.updated_at
-        )}`,
+        customer_name: `${event.contact_given_name} ${event.contact_family_name}`,
         error_type: event.error_type || "",
         description: event.error_description || "",
         affected_channel: affectedChannel,
         status: event.notification_status || "",
+        date_time: `${formatDate(event.updated_at)}, ${formatTime(
+          event.updated_at
+        )}`,
       };
     });
   };
@@ -74,7 +94,7 @@ function ErrorNotificationContent() {
           page_size: alertPerPage,
         }
       );
-
+      console.log("response", response);
       const transformedData = transformPayload(response.data);
       setErrorDetails(transformedData);
       setTotalPages(response.data.total_pages || 1);
@@ -105,11 +125,11 @@ function ErrorNotificationContent() {
     <div className={styles.dashboardContainer}>
       <Sidebar
         isCollapsed={isSidebarActive}
-        toggleSidebar={() => setIsSidebarActive(!isSidebarActive)}
+        toggleSidebar={toggleSidebar}
+        isMobileActive={isMobileSidebarActive}
+        closeSidebar={toggleMobileSidebar}
       />
-      <Header
-        toggleSidebar={() => setIsMobileSidebarActive(!isMobileSidebarActive)}
-      />
+      <Header toggleSidebar={toggleMobileSidebar} />
       <div
         className={isSidebarActive ? styles.mainContent : styles.sidebarActive}
       >
@@ -120,7 +140,7 @@ function ErrorNotificationContent() {
             </h2>
             <button
               className={`${styles.pageButton} bg-[#5177FF] px-5 py-2 text-white`}
-              onClick={() => router.push("/logs-report")}
+              onClick={() => router.push("/logs_report")}
             >
               <img
                 src="/images/back_arrow.svg"

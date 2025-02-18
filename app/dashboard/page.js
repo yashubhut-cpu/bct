@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Sidebar from "../component/Sidebar/sidebar";
 import Table from "../component/Table";
 import "@fontsource/be-vietnam-pro";
@@ -18,7 +18,7 @@ import { formatDate, formatTime } from "../component/FormatDateTime";
 import { BsFillInfoCircleFill } from "react-icons/bs";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import Loading from "../component/loading";
-// Dynamically import MyChartComponent with SSR disabled
+
 const MyMonthlyChartComponent = dynamic(
   () => import("../component/monthly_chart/chart.js"),
   {
@@ -44,6 +44,7 @@ export default function Dashboard() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [alertPerPage] = useState(10);
+  const [hasFetchedData, setHasFetchedData] = useState(false);
   const [engagementInsights, setEngagementInsights] = useState({
     totalAlertsSent: 0,
     subscribersSegmented: 0,
@@ -64,6 +65,8 @@ export default function Dashboard() {
   // Fetch engagement insights data
   useEffect(() => {
     const fetchEngagementInsights = async () => {
+      if (hasFetchedData) return;
+
       try {
         const response = await get("/dashboard/engagement_insights/");
         if (response.data) {
@@ -75,6 +78,7 @@ export default function Dashboard() {
             recentAlerts: response.data.recent_alerts_count || 0,
             userGroups: response.data.user_groups_count || 0,
           });
+          setHasFetchedData(true);
         }
       } catch (error) {
         console.error("Error fetching engagement insights:", error);
@@ -84,7 +88,7 @@ export default function Dashboard() {
     };
 
     fetchEngagementInsights();
-  }, [engagementInsights]);
+  }, [hasFetchedData]);
 
   // Fetch monthly alerts data when the selected year changes
   useEffect(() => {
@@ -105,7 +109,7 @@ export default function Dashboard() {
     };
 
     fetchMonthlyAlerts();
-  }, [selectedYear]);
+  }, []);
 
   // Fetch weekly alerts data when the selected week changes
   useEffect(() => {
@@ -125,7 +129,7 @@ export default function Dashboard() {
       }
     };
     fetchWeeklyAlerts();
-  }, [selectedWeek]);
+  }, []);
 
   useEffect(() => {
     const fetchRecentTradeAlerts = async () => {
@@ -203,9 +207,7 @@ export default function Dashboard() {
   }, []);
 
   const toggleMobileSidebar = () =>
-    setIsMobileSidebarActive(!isMobileSidebarActive);
-
-  // Handle year selection change
+    setIsMobileSidebarActive(!isMobileSidebarActive); // Handle year selection change
   const handleYearChange = (year) => {
     setSelectedYear(year);
   };
@@ -228,6 +230,7 @@ export default function Dashboard() {
 
   const handleEyeClick = (id) => {
     if (id) {
+      console.log("id", id);
       router.push(`/errornotification?id=${id}`);
     }
   };
@@ -396,7 +399,7 @@ export default function Dashboard() {
                     <Table
                       alerts={paginatedAlerts}
                       visibleColumns={columnsConfig.dashboard}
-                      onEyeClick={handleEyeClick}
+                      onEyeIconClick={handleEyeClick}
                       loading={loading}
                     />
                   </div>

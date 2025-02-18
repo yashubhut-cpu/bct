@@ -1,12 +1,13 @@
 "use client";
+import React from "react";
 import { useState, useEffect, useCallback } from "react";
-import { ChevronRight, ChevronLeft } from "lucide-react";
 import { del, get, post, put } from "../api/base";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import "@fontsource/be-vietnam-pro";
 import "@fontsource/be-vietnam-pro/400.css";
 import "@fontsource/be-vietnam-pro/400-italic.css";
-import styles from "../usermanagement/styles.module.css";
+import styles from "./styles.module.css";
 import Sidebar from "../component/Sidebar/sidebar";
 import Table from "../component/Table";
 import columnsConfig from "../columnsConfig";
@@ -17,55 +18,48 @@ import ConfirmationDialog from "../component/ConfirmationDialog";
 import Popup from "../component/Popup";
 import CustomSelect from "../component/CustomSelect";
 import Loading from "../component/loading";
-export default function Usermanagement() {
-  const [users, setUsers] = useState([]);
-  const [editingUser, setEditingUser] = useState(null);
-  const [groups, setGroups] = useState([]);
+
+export default function Groupmanagement() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [active, setActive] = useState(true);
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [groupData, setGroupData] = useState([]);
+  const [editingGroup, setEditingGroup] = useState(null);
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
-  const [userToDelete, setUserToDelete] = useState(null);
+
+  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editorsList, setEditorsList] = useState([]);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState(null);
+
   const [popup, setPopup] = useState({
     show: false,
     message: "",
     type: "success",
   });
+
   const [formValues, setFormValues] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    Role: "",
-    assignedGroups: [],
+    groupName: "",
+    description: "",
+    status: "",
+    segmentation: "",
+    tagAssigned: [],
+    assignedEditors: [],
   });
+
   const [errors, setErrors] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    Role: "",
-    assignedGroups: "",
+    groupName: "",
+    description: "",
+    status: "",
+    segmentation: "",
+    tagAssigned: "",
+    assignedEditors: "",
   });
 
-  const handleToggle = () => {
-    setActive((prev) => !prev);
-  };
-
-  useEffect(() => {
-    if (editingUser) {
-      setActive(editingUser.is_active);
-      setIsEditing(true);
-    } else {
-      setActive(true);
-      setIsEditing(false);
-    }
-  }, [editingUser]);
+  const router = useRouter();
 
   const toggleSidebar = () => {
     setIsSidebarActive(!isSidebarActive);
@@ -82,110 +76,130 @@ export default function Usermanagement() {
       setIsSidebarActive(false);
     }
   }, []);
+
   const toggleMobileSidebar = () =>
-    setIsMobileSidebarActive(!isMobileSidebarActive);
-
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await get("/user_management/user_management_list/", {
-        page,
-        page_size: itemsPerPage,
-      });
-      setUsers(response.data?.users);
-      console.log("users fetching...", response.data?.users);
-      setTotalPages(response?.data?.total_pages || 1);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, itemsPerPage]); // Dependencies
+    setIsMobileSidebarActive(!isMobileSidebarActive); // Handle year selection change
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setPage(newPage);
-    }
-  };
-
-  const handleGroupChange = (select) => {
-    const assignedGroups = select || [];
-
-    setFormValues({
-      ...formValues,
-      assignedGroups,
-    });
-
-    setErrors({
-      ...errors,
-      assignedGroups:
-        assignedGroups.length > 0
-          ? ""
-          : "At least one editor must be selected.",
-    });
-  };
-
-  useEffect(() => {
-    setIsPanelOpen(isPanelOpen);
-  }, [isPanelOpen]);
-
-  const togglePanel = (rowData = null) => {
-    setIsPanelOpen(!isPanelOpen);
-    if (rowData) {
-      setEditingUser(rowData);
-      setFormValues({
-        firstName: rowData.first_name,
-        lastName: rowData.last_name,
-        email: rowData.email,
-        Role: rowData.role,
-        assignedGroups: rowData.group?.map((group) => ({
-          value: group.id,
-          label: `${group.group_name}`,
-        })),
-      });
-    } else {
-      setEditingUser(null);
-      setFormValues({
-        firstName: "",
-        lastName: "",
-        email: "",
-        Role: "",
-        assignedGroups: [],
-      });
-    }
-  };
-
-  const router = useRouter();
-
-  useEffect(() => {
-    document.title = "User Management";
+    document.title = "Group Management";
     if (localStorage.getItem("accessToken")) {
-      router.push("/usermanagement");
+      router.push("/group_management");
     } else {
       router.push("/");
     }
   }, [router]);
 
-  const getGroupsList = async () => {
+  const fetchTags = async (value) => {
+    let apiUrl = "";
+
+    if (value === "keap") {
+      apiUrl = "/api_client/keap_tags/";
+    } else if (value === "go_high_level") {
+      apiUrl = "/api_client/ghl_tags/";
+    } else {
+      setTags([]);
+      return;
+    }
+
     try {
-      const response = await get("/user_management/group_list/");
-      const result = response.data.map((group) => ({
-        value: group.id,
-        label: group.group_name,
-      }));
-      setGroups(result);
+      const response = await get(apiUrl);
+      if (response.status === 200) {
+        const data = await response.data;
+        setTags(data.tags);
+      } else {
+        throw new Error("Failed to fetch tags");
+      }
     } catch (error) {
-      console.error("Error fetching groups:", error);
+      setTags([]);
     }
   };
 
   useEffect(() => {
-    getGroupsList();
+    if (editingGroup && editingGroup.segmentation_criteria) {
+      fetchTags(editingGroup.segmentation_criteria);
+    }
+  }, [editingGroup]);
+
+  const togglePanel = (rowData = null) => {
+    setIsPanelOpen(!isPanelOpen);
+    if (rowData) {
+      setEditingGroup(rowData);
+      setFormValues({
+        groupName: rowData.group_name,
+        description: rowData.description,
+        status: rowData.is_active ? "active" : "inactive",
+        segmentation: rowData.segmentation_criteria,
+        tagAssigned: rowData.tags.map((tag) => ({
+          value: tag.id,
+          label: tag.tag_name,
+        })),
+        assignedEditors: rowData.editor_assigned_groups.map((editor) => ({
+          value: editor.editor.id,
+          label: `${editor.editor.first_name} ${editor.editor.last_name}`,
+        })),
+      });
+    } else {
+      setEditingGroup(null);
+      setFormValues({
+        groupName: "",
+        description: "",
+        status: "",
+        segmentation: "",
+        tagAssigned: [],
+        assignedEditors: [],
+      });
+    }
+  };
+
+  const handleTagsChange = (select) => {
+    const tagAssigned = select || [];
+
+    console.log("tagAssigned", tagAssigned);
+
+    setFormValues({
+      ...formValues,
+      tagAssigned,
+    });
+
+    setErrors({
+      ...errors,
+      tagAssigned:
+        tagAssigned.length > 0 ? "" : "At least one tag must be selected.",
+    });
+  };
+
+  const handleEditorChange = (select) => {
+    const assignedEditors = select || [];
+
+    setFormValues({
+      ...formValues,
+      assignedEditors,
+    });
+
+    setErrors({
+      ...errors,
+      assignedEditors:
+        assignedEditors.length > 0
+          ? ""
+          : "At least one editor must be selected.",
+    });
+  };
+
+  const getEditorsList = async () => {
+    try {
+      const response = await get("/group_management/editor_list/");
+      const result = response.data.map((editor) => ({
+        value: editor.id,
+        label: `${editor.first_name} ${editor.last_name}`,
+      }));
+      setEditorsList(result);
+    } catch (error) {
+      console.error("Error fetching editors:", error);
+    }
+  };
+
+  useEffect(() => {
+    getEditorsList();
   }, []);
 
   const customStyles = {
@@ -249,9 +263,17 @@ export default function Usermanagement() {
       borderRadius: "12px",
       backgroundColor: "transparent",
       color: "#fff",
-      borderColor: "#999",
+      borderColor: "rgb(75 85 99)",
       boxShadow: "none",
       padding: "5px 10px",
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: "#fff",
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: "#94A3B8",
     }),
     input: (provided) => ({
       ...provided,
@@ -259,22 +281,37 @@ export default function Usermanagement() {
     }),
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const { id, value } = e.target;
-    console.log("id", id);
-    console.log("value", value);
+
     setFormValues((prevFormValues) => ({
       ...prevFormValues,
       [id]: value,
     }));
     setErrors((prevErrors) => ({
       ...prevErrors,
-      [id]: value ? "" : "This field is required.",
+      [id]: value ? "" : `${id} is required.`,
     }));
+    if (id === "segmentation") {
+      await fetchTags(value);
+    }
+    if (
+      id === "status" &&
+      value === "inactive" &&
+      editingGroup &&
+      editingGroup.is_active
+    ) {
+      setEditingGroup((prevEditingGroup) => ({
+        ...prevEditingGroup,
+        is_active: false,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    console.log("Form values:", formValues);
 
     const newErrors = {};
     Object.keys(formValues).forEach((key) => {
@@ -289,140 +326,152 @@ export default function Usermanagement() {
 
     if (Object.keys(newErrors).length === 0) {
       const payload = {
-        first_name: formValues.firstName,
-        last_name: formValues.lastName,
-        email: formValues.email,
-        is_active: active,
-        role: formValues.Role,
-        group_editors_assignment: formValues.assignedGroups.map(
-          (group) => group.value
+        group_name: formValues.groupName,
+        description: formValues.description,
+        is_active: formValues.status === "active",
+        segmentation_criteria: formValues.segmentation,
+        tags: formValues.tagAssigned?.map((tag) => tag.value),
+        editors_group_assignment: formValues.assignedEditors?.map(
+          (editor) => editor.value
         ),
       };
-      setIsSubmitting(true);
+
+      console.log("Payload:", payload);
+
       try {
         let response;
-        if (editingUser) {
+        if (editingGroup) {
           response = await put(
-            `/user_management/update_user_management/${editingUser.id}/`,
+            `/group_management/update_group/${editingGroup.id}/`,
             payload
           );
+          console.log("Group updated successfully:", response.data);
           setPopup({
             show: true,
-            message: "User updated successfully",
+            message: "Group updated successfully",
             type: "success",
           });
         } else {
-          response = await post(
-            "/user_management/create_user_management/",
-            payload
-          );
+          response = await post("/group_management/create_group/", payload);
+          console.log("Group created successfully:", response.data);
           setPopup({
             show: true,
-            message: "User created successfully",
+            message: "Group created successfully",
             type: "success",
           });
         }
         togglePanel();
-        fetchUsers();
+        fetchGroups();
       } catch (error) {
-        console.error("Error creating/updating user:", error);
-        if (error.response && error.response.status === 409) {
-          setPopup({
-            show: true,
-            message: "Error: Email is already in use.",
-            type: "error",
-          });
-        } else {
-          setPopup({
-            show: true,
-            message: `Error: ${
-              error.response?.data?.message ||
-              "An unexpected error occurred, Please try again!!!"
-            }`,
-            type: "error",
-          });
-        }
-      } finally {
-        setIsSubmitting(false);
+        console.error(
+          "Error saving group:",
+          error.response?.data || error.message
+        );
+        setPopup({
+          show: true,
+          message: `Error: ${
+            error.response?.data.message ||
+            "An unexpected error occurred, Please try again!!!"
+          }`,
+          type: "error",
+        });
       }
     }
   };
 
   const handleDeleteClick = (id) => {
-    setUserToDelete(id);
+    setGroupToDelete(id);
     setIsConfirmDialogOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (!userToDelete) {
-      console.warn("No user selected for deletion");
+    if (!groupToDelete) {
+      console.warn("No group selected for deletion.");
       return;
     }
 
     try {
-      await del(`/user_management/delete_user_management/${userToDelete}/`);
-      console.log("User deleted successfully");
+      await del(`/group_management/delete_group/${groupToDelete}/`);
+      console.log("Group deleted successfully");
       setPopup({
         show: true,
-        message: "User deleted successfully",
+        message: "Group deleted successfully",
         type: "success",
       });
-      fetchUsers();
+
+      fetchGroups();
     } catch (error) {
       console.error(
-        `Error deleting user with ID ${userToDelete}:`,
+        `Error deleting group with ID ${groupToDelete}:`,
         error.response?.data || error.message
       );
       setPopup({
         show: true,
-        message: `Error deleting user: ${
-          error.response?.data?.message ||
+        message: `Error: ${
+          error.response?.data.message ||
           "An unexpected error occurred, Please try again!!!"
         }`,
         type: "error",
       });
     } finally {
-      setUserToDelete(null);
+      setGroupToDelete(null);
       setIsConfirmDialogOpen(false);
     }
   };
 
+  const fetchGroups = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await get("/group_management/get_group/", {
+        page,
+        page_size: itemsPerPage,
+      });
+      const groupsWithAssignedEditors = response?.data?.groups.map((group) => ({
+        ...group,
+        assignedEditors: group.editor_assigned_groups
+          .map(
+            (editor) => `${editor.editor.first_name} ${editor.editor.last_name}`
+          )
+          .join(", "),
+      }));
+      setGroupData(groupsWithAssignedEditors);
+      setTotalPages(response?.data?.total_pages || 1);
+    } catch (error) {
+      console.error("Error fetching groups:", error);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, itemsPerPage]);
+
+  useEffect(() => {
+    fetchGroups();
+  }, [fetchGroups]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
+
   const handleEditClick = (id, rowData) => {
-    setEditingUser(rowData);
+    console.log("rowdata", rowData);
+    setEditingGroup(rowData);
     setFormValues({
-      firstName: rowData.first_name,
-      lastName: rowData.last_name,
-      email: rowData.email,
-      Role: rowData.role,
-      assignedGroups: rowData.group.map((g) => ({
-        value: g.group.id,
-        label: `${g.group.group_name}`,
+      groupName: rowData.group_name,
+      description: rowData.description,
+      status: rowData.is_active ? "active" : "inactive",
+      segmentation: rowData.segmentation_criteria,
+      tagAssigned: rowData.tags.map((tag) => ({
+        value: tag.id,
+        label: tag.tag_name,
+      })),
+      assignedEditors: rowData.editor_assigned_groups.map((editor) => ({
+        value: editor.editor.id,
+        label: `${editor.editor.first_name} ${editor.editor.last_name}`,
       })),
     });
     setIsPanelOpen(true);
-  };
-
-  const handlePasswordReset = async (id) => {
-    try {
-      const response = await put(
-        `/user_management/change_password_request/${id}/`
-      );
-      setPopup({
-        show: true,
-        message: "Password reset request sent successfully.",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Error resetting password:", error);
-      setPopup({
-        show: true,
-        message: `Error: ${
-          error.response?.data?.message ||
-          "An unexpected error occurred while resetting the password."
-        }`,
-        type: "error",
-      });
-    }
   };
 
   return (
@@ -431,8 +480,8 @@ export default function Usermanagement() {
         isCollapsed={isSidebarActive}
         toggleSidebar={toggleSidebar}
         isMobileActive={isMobileSidebarActive}
+        closeSidebar={toggleMobileSidebar}
       />
-      {/* Conditionally applying the class for main content */}
       <Header toggleSidebar={toggleMobileSidebar} />
       <div
         className={`${
@@ -440,18 +489,16 @@ export default function Usermanagement() {
         }`}
       >
         <div className={styles.pageContent}>
-          {/* Group Management Section */}
           <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
             <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
-              User Management
+              Group Management
             </h2>
             <button className={styles.pageButton} onClick={() => togglePanel()}>
-              <img src="/images/add_user.svg" alt="Add Group Icon" />
-              Add New User
+              <img src="/images/addnewgroup.svg" alt="Add Group Icon" />
+              Add New Group
             </button>
           </div>
 
-          {/* Table Content */}
           <div className="mx-2 mb-4">
             <div className="bg-[#1C2546] rounded-[20px] shadow relative">
               <div className={styles.tableSection}>
@@ -463,18 +510,16 @@ export default function Usermanagement() {
                     className={styles.tableContent + " force-overflow p-4 pt-0"}
                   >
                     <Table
-                      alerts={users}
-                      visibleColumns={columnsConfig.usermanagement}
+                      alerts={groupData}
+                      visibleColumns={columnsConfig.groupmanagement}
                       onEditClick={handleEditClick}
                       onDeleteClick={handleDeleteClick}
-                      onPasswordResetClick={handlePasswordReset}
                       loading={loading}
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Pagination Section */}
               <div className={styles.pagination + " p-4"}>
                 <button
                   className={styles.paginationButton}
@@ -506,193 +551,195 @@ export default function Usermanagement() {
           </div>
         </div>
 
-        {/* Sliding Panel */}
         <SlidingPanel
           isOpen={isPanelOpen}
-          onClose={togglePanel}
+          onClose={() => setIsPanelOpen(false)}
           width="w-[700px]"
           style={{
             height: "685px",
             top: "0px",
             left: "998px",
             gap: "20px",
-
             opacity: isPanelOpen ? 1 : 0,
             transition: "opacity 0.3s ease-in-out",
           }}
         >
-          {/* Header Text */}
           <div className="p-4 pb-0 force-overflow">
-            <h2 className="text-white text-[36px]">Add/Edit User</h2>
+            <h2 className="text-white text-[36px]">
+              {editingGroup ? "Edit Group" : "Add New Group"}
+            </h2>
           </div>
-          {/* Form Content */}
           <div className="p-6 bg-[#1C2546] text-white rounded-b-lg">
             <form onSubmit={handleSubmit}>
-              {/* First Name Field */}
               <div className="mb-4">
                 <label
-                  htmlFor="firstName"
+                  htmlFor="groupName"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  First Name*
+                  Group Name*
                 </label>
                 <input
                   type="text"
-                  id="firstName"
-                  placeholder="Enter your first name here"
+                  id="groupName"
+                  placeholder="Enter your group Name here"
                   className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.firstName}
+                  value={formValues.groupName}
                   onChange={handleInputChange}
                 />
-                {errors.firstName && (
-                  <span className={styles.error}>{errors.firstName}</span>
+                {errors.groupName && (
+                  <span className={styles.error}>{errors.groupName}</span>
                 )}
               </div>
 
-              {/* Last Name Field */}
               <div className="mb-4">
                 <label
-                  htmlFor="lastName"
+                  htmlFor="description"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Last Name*
+                  Description*
                 </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  placeholder="Enter your last name here"
+                <textarea
+                  id="description"
+                  placeholder="Group description goes here"
+                  rows="4"
                   className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.lastName}
+                  value={formValues.description}
                   onChange={handleInputChange}
-                />
-                {errors.lastName && (
-                  <span className={styles.error}>{errors.lastName}</span>
+                ></textarea>
+                {errors.description && (
+                  <span className={styles.error}>{errors.description}</span>
                 )}
               </div>
 
-              {/* Email Field */}
               <div className="mb-4">
                 <label
-                  htmlFor="email"
+                  htmlFor="status"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Email*
+                  Status*
                 </label>
-                <input
-                  id="email"
-                  placeholder="You're email goes here"
-                  type="text"
-                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.email}
-                  onChange={handleInputChange}
-                ></input>
-                {errors.email && (
-                  <span className={styles.error}>{errors.email}</span>
-                )}
-              </div>
-
-              {/* User Role Field */}
-              <div className="mb-4">
-                <label
-                  htmlFor="Role"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  User Role*
-                </label>
-
                 <CustomSelect
-                  id="Role"
-                  value={formValues.Role}
+                  value={formValues.status}
                   options={[
-                    { value: "editor", label: "Editor" },
-                    { value: "admin", label: "Admin" },
+                    { value: "active", label: "Active" },
+                    { value: "inactive", label: "In Active" },
                   ]}
-                  onChange={(newRole) =>
+                  onChange={(newValue) =>
                     handleInputChange({
-                      target: { id: "Role", value: newRole },
+                      target: { id: "status", value: newValue },
                     })
                   }
-                  placeholder="Select User Role"
+                  placeholder="Select Status"
                 />
-                {errors.Role && (
-                  <span className={styles.error}>{errors.Role}</span>
+                {errors.status && (
+                  <span className={styles.error}>{errors.status}</span>
                 )}
               </div>
 
-              <div className={styles.field8 + " mb-4"}>
-                <label>Assign Groups*</label>
+              <div className="mb-4">
+                <label
+                  htmlFor="segmentation"
+                  className="block text-white text-sm font-medium mb-2"
+                >
+                  Segmentation Criteria*
+                </label>
+                <CustomSelect
+                  options={[
+                    { value: "keap", label: "Keap" },
+                    { value: "go_high_level", label: "Go High Level" },
+                  ]}
+                  value={formValues.segmentation}
+                  onChange={(newValue) =>
+                    handleInputChange({
+                      target: { id: "segmentation", value: newValue },
+                    })
+                  }
+                  placeholder="Select Segmentation Criteria"
+                />
+                {errors.segmentation && (
+                  <span className={styles.error}>{errors.segmentation}</span>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label
+                  htmlFor="tagAssigned"
+                  className="block text-white text-sm font-medium mb-2"
+                >
+                  Tag Assigned*
+                </label>
+
+                <Select
+                  isMulti
+                  name="tagAssigned"
+                  options={tags.map((tag) => ({
+                    value: tag.id,
+                    label: tag.tag_name,
+                  }))}
+                  value={formValues.tagAssigned}
+                  onChange={handleTagsChange}
+                  placeholder="Select Tags"
+                  classNamePrefix="select"
+                  styles={customStyles}
+                />
+
+                {errors.tagAssigned && (
+                  <span className={styles.error}>{errors.tagAssigned}</span>
+                )}
+              </div>
+
+              <div className={styles.field8}>
+                <label className="block text-white text-sm font-medium mb-2">
+                  Assign Editors*
+                </label>
                 <div className={styles.selectWrapper}>
                   <Select
                     isMulti
-                    options={groups}
-                    value={formValues.assignedGroups}
-                    onChange={handleGroupChange}
-                    placeholder="Search and select groups"
-                    instanceId="assigned-groups-select"
+                    name="editors"
+                    options={editorsList}
+                    value={formValues.assignedEditors}
+                    onChange={handleEditorChange}
+                    placeholder="Select editors"
                     classNamePrefix="select"
                     styles={customStyles}
                   />
-                  {errors.assignedGroups && (
+                  {errors.assignedEditors && (
                     <span className={styles.error}>
-                      {errors.assignedGroups}
+                      {errors.assignedEditors}
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2 mb-5">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    id="status"
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={active}
-                    onChange={handleToggle}
-                  />
-                  <div className="w-10 h-6 bg-[#000] rounded-full peer peer-checked:bg-[#4E71F3] transition duration-300"></div>
-                  <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full peer-checked:translate-x-4 transition-transform duration-300"></div>
-                </label>
-                <span>{active ? "Active" : "Not Active"}</span>
-
-                <span className="text-white font-medium">
-                  Status*<span className="text-blue-300"></span>
-                </span>
-              </div>
-
-              <div className="mb-4 flex justify-start space-x-4">
-                {/* Submit Button */}
+              <div className="mb-4 mt-4 flex justify-start space-x-4">
                 <button
                   type="submit"
-                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
-                  disabled={isSubmitting}
+                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none"
                 >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <Loading color={"white"} />
-                    </div>
-                  ) : editingUser ? (
-                    "Update User"
+                  {loading ? (
+                    <Loading />
+                  ) : editingGroup ? (
+                    "Update Group"
                   ) : (
                     "Submit & Save"
                   )}
                 </button>
-                {/* Clear Button */}
+
                 <button
                   type="button"
                   className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"
                   onClick={() => {
                     setFormValues({
-                      firstName: "",
-                      lastName: "",
-                      email: "",
-                      Role: "",
-                      assignedGroups: [],
+                      groupName: "",
+                      description: "",
+                      status: "",
+                      segmentation: "",
+                      tagAssigned: [],
+                      assignedEditors: [],
                     });
                     setErrors({});
                   }}
-                  disabled={isSubmitting}
                 >
-                  {/* Recycle Icon (Rounded cancel logo) */}
                   <span className="mr-2">
                     <img src="/images/clear_logo.svg" alt="Recycle Icon" />
                   </span>
@@ -707,8 +754,7 @@ export default function Usermanagement() {
           isOpen={isConfirmDialogOpen}
           onClose={() => setIsConfirmDialogOpen(false)}
           onConfirm={confirmDelete}
-          title="Delete User"
-          message="Are you sure you want to delete this user?"
+          message="Are you sure you want to delete this group?"
         />
 
         {popup.show && (

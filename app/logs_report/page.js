@@ -5,7 +5,7 @@ import { Search, ChevronRight, ChevronLeft } from "lucide-react";
 import { post, get } from "../api/base";
 import { formatTime, formatDate } from "../component/FormatDateTime";
 import Table from "../component/Table";
-import styles from "../logs-report/styles.module.css";
+import styles from "../logs_report/styles.module.css";
 import Sidebar from "../component/Sidebar/sidebar";
 import CustomMultiSelect from "../component/CustomMultiSelect";
 import DatePicker from "react-datepicker";
@@ -21,6 +21,7 @@ import "react-datepicker/dist/react-datepicker.css";
 export default function Logreport() {
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
+
   const [isOpen, setIsOpen] = useState(false);
   const [tradeAlerts, setTradeAlerts] = useState([]);
   const [filterState, setFilterState] = useState({});
@@ -45,7 +46,7 @@ export default function Logreport() {
   useEffect(() => {
     document.title = "Logs & Reports";
     if (localStorage.getItem("accessToken")) {
-      router.push("/logs-report");
+      router.push("/logs_report");
     } else {
       router.push("/");
     }
@@ -185,7 +186,7 @@ export default function Logreport() {
 
   const handleEyeClick = (id) => {
     if (id) {
-      router.push(`/errornotification?id=${id}`);
+      router.push(`/error_notification?id=${id}`);
     }
   };
 

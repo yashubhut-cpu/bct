@@ -1,12 +1,12 @@
 const columnsConfig = {
   dashboard: [
+    "id",
     "title",
     "description",
     "ticker",
     "entryPrice",
     "exitPrice",
-    "status",
-    "date",
+    "date_time",
     "action",
     "eye",
   ],
@@ -32,11 +32,13 @@ const columnsConfig = {
     "eye",
   ],
   errortype: [
-    "date_time",
+    "id",
+    "customer_name",
     "error_type",
     "description",
     "affected_channel",
     "status",
+    "date_time",
   ],
   usermanagement: [
     "id",

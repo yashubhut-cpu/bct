@@ -52,13 +52,16 @@ export default function WeekSelector({ selectedWeek, onWeekChange }) {
         <ul
           className={
             styles.dropdownMenu +
-            " absolute bg-[#5177FF] p-3 w-full z-30 mt-1 rounded-md text-sm"
+            " absolute bg-[#2e3e77] p-3 w-full z-30 mt-1 rounded-md text-sm text-[#ffffff]"
           }
         >
           {weeks.map((week, index) => (
             <li
               key={index}
-              className={styles.dropdownItem + " cursor-pointer"}
+              className={
+                styles.dropdownItem +
+                " cursor-pointer py-2 border-b border-gray-600"
+              }
               onClick={() => handleWeekClick(week.value)}
             >
               {week.label}

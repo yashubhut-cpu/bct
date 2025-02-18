@@ -13,20 +13,20 @@ const menuItems = [
   {
     name: "Input Trade Alert",
     icon: "/images/trade-alert.svg",
-    href: "/inputtradealert",
+    href: "/input_trade_alert",
   },
   {
     name: "Group Management",
     icon: "/images/group.svg",
-    href: "/groupmanagement",
+    href: "/group_management",
   },
-  { name: "Logs & Reports", icon: "/images/logs.svg", href: "/logs-report" },
+  { name: "Logs & Reports", icon: "/images/logs.svg", href: "/logs_report" },
   {
     name: "User Management",
     icon: "/images/user-management.svg",
-    href: "/usermanagement",
+    href: "/user_management",
   },
-  { name: "Settings", icon: "/images/settings.svg", href: "/auth-settings" },
+  { name: "Settings", icon: "/images/settings.svg", href: "/auth_settings" },
 ];
 
 export default function Sidebar({
@@ -49,7 +49,6 @@ export default function Sidebar({
       try {
         const decodedToken = jwtDecode(accessToken);
         const { first_name, last_name } = decodedToken;
-        console.log("name", first_name, last_name);
         setUserName(`${first_name} ${last_name}`);
       } catch (error) {
         console.error("Failed to decode token:", error);
@@ -80,13 +79,16 @@ export default function Sidebar({
 
       {!isCollapsed && (
         <div className={styles.logo}>
-          <Image
-            src="/images/bct_small.svg"
-            alt="Base Camp Trading Logo"
-            width={135}
-            height={40}
-            loading="lazy"
-          />
+          <Link href="/dashboard">
+            <Image
+              src="/images/bct_small.svg"
+              alt="Base Camp Trading Logo"
+              width={135}
+              height={40}
+              loading="lazy"
+              className="cursor-pointer"
+            />
+          </Link>
           <button
             className="absolute top-4 right-4 text-gray-200 hover:text-gray-400 text-[30px]"
             onClick={closeSidebar}
@@ -98,12 +100,16 @@ export default function Sidebar({
 
       {isCollapsed && (
         <div className={styles.menuIconContainer}>
-          <Image
-            src="/images/bct_small_1.png"
-            alt="Menu Icon"
-            width={30}
-            height={30}
-          />
+          <Link href="/dashboard">
+            <Image
+              src="/images/bct_small_1.png"
+              alt="Menu Icon"
+              width={30}
+              height={30}
+              loading="lazy"
+              className="cursor-pointer"
+            />
+          </Link>
         </div>
       )}
 
