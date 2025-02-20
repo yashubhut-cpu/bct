@@ -270,22 +270,23 @@ export default function TagsManagement() {
     if (isValid) {
       setIsSubmitting(true);
       try {
-        const payload = tagAssigned.map((tag) => {
-          if (segmentationCriteria === "keap") {
-            return {
-              id: tag.value,
-              name: tag.label,
-              description: tag.description || null,
-              category: tag.category || null,
-            };
-          } else if (segmentationCriteria === "go_high_level") {
-            return {
-              id: tag.value,
-              name: tag.label,
-              locationId: tag.locationId || "",
-            };
-          }
-        });
+        let payload;
+
+        if (segmentationCriteria === "keap") {
+          payload = rawTags.filter((tag) =>
+            tagAssigned.some((t) => t.value === tag.id)
+          );
+        } else if (segmentationCriteria === "go_high_level") {
+          payload = tagAssigned
+            .filter((tag) => rawTags.some((rt) => rt.id === tag.value))
+            .map((tag) => {
+              return {
+                id: tag.value,
+                name: tag.label,
+                locationId: tag.locationId || "",
+              };
+            });
+        }
 
         let apiURL = "";
         if (segmentationCriteria === "keap") {
@@ -437,7 +438,10 @@ export default function TagsManagement() {
                 </div>
 
                 <div className={styles.buttonGroup}>
-                  <button className={styles.saveButton} disabled={isSubmitting}>
+                  <button
+                    className={styles.saveButton + " relative"}
+                    disabled={isSubmitting}
+                  >
                     {isSubmitting ? <Loader position="top" /> : "Save"}
                   </button>
                   <button

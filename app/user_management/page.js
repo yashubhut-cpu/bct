@@ -50,7 +50,7 @@ export default function Usermanagement() {
     lastName: "",
     email: "",
     Role: "",
-    assignedGroups: "",
+    // assignedGroups: "",
   });
 
   const handleToggle = () => {
@@ -117,13 +117,13 @@ export default function Usermanagement() {
       assignedGroups,
     });
 
-    setErrors({
-      ...errors,
-      assignedGroups:
-        assignedGroups.length > 0
-          ? ""
-          : "At least one editor must be selected.",
-    });
+    // setErrors({f
+    //   ...errors,
+    //   assignedGroups:
+    //     assignedGroups.length > 0
+    //       ? ""
+    //       : "At least one editor must be selected.",
+    // });
   };
 
   useEffect(() => {
@@ -281,11 +281,10 @@ export default function Usermanagement() {
     e.preventDefault();
 
     const newErrors = {};
-    Object.keys(formValues).forEach((key) => {
-      if (
-        !formValues[key] ||
-        (Array.isArray(formValues[key]) && formValues[key].length === 0)
-      ) {
+    // Only validate these required fields
+    const requiredFields = ["firstName", "lastName", "email", "Role"];
+    requiredFields.forEach((key) => {
+      if (!formValues[key]) {
         newErrors[key] = "This field is required.";
       }
     });
@@ -538,7 +537,7 @@ export default function Usermanagement() {
                   htmlFor="firstName"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  First Name*
+                  First Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -559,7 +558,7 @@ export default function Usermanagement() {
                   htmlFor="lastName"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Last Name*
+                  Last Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -580,7 +579,7 @@ export default function Usermanagement() {
                   htmlFor="email"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  Email*
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="email"
@@ -601,7 +600,7 @@ export default function Usermanagement() {
                   htmlFor="Role"
                   className="block text-white text-sm font-medium mb-2"
                 >
-                  User Role*
+                  User Role <span className="text-red-500">*</span>
                 </label>
 
                 <CustomSelect
@@ -624,7 +623,7 @@ export default function Usermanagement() {
               </div>
 
               <div className={styles.field8 + " mb-4"}>
-                <label>Assign Groups*</label>
+                <label>Assign Groups</label>
                 <div className={styles.selectWrapper}>
                   <Select
                     isMulti
@@ -659,7 +658,7 @@ export default function Usermanagement() {
                 <span>{active ? "Active" : "Not Active"}</span>
 
                 <span className="text-white font-medium">
-                  Status*<span className="text-blue-300"></span>
+                  Status <span className="text-red-500">*</span>
                 </span>
               </div>
 

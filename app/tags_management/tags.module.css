@@ -45,6 +45,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  position: relative;
   transition: background-color 0.2s;
 }
 
@@ -81,7 +82,6 @@
   .saveButton,
   .resetButton {
     width: 100%;
-    height: 80px;
   }
 }
 

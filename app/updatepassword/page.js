@@ -29,7 +29,7 @@ function UpdatePasswordContent() {
   });
 
   useEffect(() => {
-    document.title = "Update Password";
+    document.title = "Set Password";
     const logIDParam = searchParams.get("logID");
     setLogID(logIDParam);
 
@@ -198,7 +198,7 @@ function UpdatePasswordContent() {
               marginTop: "50px",
             }}
           >
-            Update Your Password
+            Set Your Password
           </h4>
 
           <form onSubmit={handleSubmit}>
@@ -405,14 +405,14 @@ function UpdatePasswordContent() {
                     <Loading color="white" position="top" />
                   </div>
                 ) : (
-                  "Update Password"
+                  "Set Password"
                 )}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Background image illustration */} 
+        {/* Background image illustration */}
         <div
           className="background-illustration lg:block hidden"
           style={{
