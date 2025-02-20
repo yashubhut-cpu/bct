@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../component/Sidebar/sidebar";
 import Table from "../component/Table";
 import "@fontsource/be-vietnam-pro";
@@ -109,7 +109,7 @@ export default function Dashboard() {
     };
 
     fetchMonthlyAlerts();
-  }, []);
+  }, [selectedYear]);
 
   // Fetch weekly alerts data when the selected week changes
   useEffect(() => {
@@ -129,7 +129,7 @@ export default function Dashboard() {
       }
     };
     fetchWeeklyAlerts();
-  }, []);
+  }, [selectedWeek]);
 
   useEffect(() => {
     const fetchRecentTradeAlerts = async () => {
@@ -181,7 +181,6 @@ export default function Dashboard() {
         setLoading(false);
       }
     };
-
     fetchRecentTradeAlerts();
   }, [alertPerPage]);
 

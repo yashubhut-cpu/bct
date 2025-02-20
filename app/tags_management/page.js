@@ -8,17 +8,26 @@ import "@fontsource/be-vietnam-pro";
 import "@fontsource/be-vietnam-pro/400.css";
 import "@fontsource/be-vietnam-pro/400-italic.css";
 import Select from "react-select";
-import { get } from "../api/base";
-import loading from "../component/loading";
-
+import { get, postAsArray } from "../api/base";
+import Popup from "../component/Popup";
+import Loader from "../component/loading";
 export default function TagsManagement() {
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
   const [segmentationCriteria, setSegmentationCriteria] = useState("");
-  const [tagAssigned, setTagAssigned] = useState("");
+  const [tagAssigned, setTagAssigned] = useState([]);
   const [tags, setTags] = useState([]);
-  const [tagsLoading, setTagsLoading] = useState(false);
+  const [rawTags, setRawTags] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isloading, setIsLoading] = useState(false);
   const [tagError, setTagError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [popup, setPopup] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
   const [segmentationCriteriaError, setSegmentationCriteriaError] =
     useState("");
 
@@ -43,6 +52,7 @@ export default function TagsManagement() {
 
   const fetchTags = async (value) => {
     let apiUrl = "";
+
     if (value === "keap") {
       apiUrl = "/api_client/keap_tags/";
     } else if (value === "go_high_level") {
@@ -51,27 +61,102 @@ export default function TagsManagement() {
       setTags([]);
       return;
     }
-    setTagsLoading(true);
 
     try {
       const response = await get(apiUrl);
-      console.log("response :: ", response);
+
       if (response.status === 200) {
-        const data = await response.data;
-        setTags(data.tags);
+        let data = response.data.tags || [];
+
+        if (value === "keap") {
+          data = data.map((tag) => ({
+            ...tag,
+            tag_name: tag.tag_extra_details
+              ? `${tag.tag_extra_details.name} -> ${tag.tag_name}`
+              : tag.tag_name,
+          }));
+        }
+
+        console.log("Updated Tags Data ::", data);
+        setTags(data);
       } else {
         throw new Error("Failed to fetch tags");
       }
     } catch (error) {
       setTags([]);
+    }
+  };
+
+  const fetchRawTags = async (segmentationCriteria, page = 1, limit = 100) => {
+    let apiUrl = "";
+
+    if (segmentationCriteria === "keap") {
+      apiUrl = `/tag_management/keap_raw_tags/?page=${page}&limit=${limit}`;
+    } else if (segmentationCriteria === "go_high_level") {
+      apiUrl = `/tag_management/ghl_raw_tags/?page=${page}&limit=${limit}`;
+    } else {
+      setRawTags([]);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await get(apiUrl);
+      if (response.status === 200) {
+        const data = await response.data.tags;
+        console.log("Fetched Tags: ", data);
+
+        setRawTags(data);
+        setHasMore(true);
+      } else {
+        throw new Error("Failed to fetch tags");
+      }
+    } catch (error) {
+      setRawTags([]);
     } finally {
-      setTagsLoading(false);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchTags(segmentationCriteria);
-  }, []);
+    setRawTags([]);
+    setPage(1);
+    setHasMore(true);
+    fetchRawTags(segmentationCriteria, 1, 100);
+  }, [segmentationCriteria]);
+
+  useEffect(() => {
+    if (tags.length > 0 && rawTags.length > 0) {
+      const matchedTags = rawTags.filter((rawTag) =>
+        tags.some((tag) => tag.tag_id === rawTag.id.toString())
+      );
+
+      const selectedTags = matchedTags.map((tag) => {
+        const matchingTag = tags.find((t) => t.tag_id === tag.id.toString());
+        if ("locationId" in tag) {
+          return {
+            value: tag.id,
+            label: matchingTag ? matchingTag.tag_name : tag.name,
+            locationId: tag.locationId,
+          };
+        }
+        return {
+          value: tag.id,
+          label: matchingTag ? matchingTag.tag_name : tag.name,
+          description: tag.description,
+          category: tag.category,
+        };
+      });
+      setTagAssigned(selectedTags);
+    }
+  }, [tags, rawTags]);
+
+  const loadMoreTags = () => {
+    if (hasMore) {
+      setPage((prevPage) => prevPage + 1);
+      fetchRawTags(segmentationCriteria, page + 1, 100);
+    }
+  };
 
   const handleTagChange = (select) => {
     const tagAssigned = select || [];
@@ -163,7 +248,7 @@ export default function TagsManagement() {
     }),
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     let isValid = true;
@@ -175,7 +260,6 @@ export default function TagsManagement() {
       setSegmentationCriteriaError("");
     }
 
-    // Validate tag selection
     if (!tagAssigned || tagAssigned.length === 0) {
       setTagError("At least one tag must be selected.");
       isValid = false;
@@ -184,7 +268,56 @@ export default function TagsManagement() {
     }
 
     if (isValid) {
-      console.log("Form submitted successfully");
+      setIsSubmitting(true);
+      try {
+        const payload = tagAssigned.map((tag) => {
+          if (segmentationCriteria === "keap") {
+            return {
+              id: tag.value,
+              name: tag.label,
+              description: tag.description || null,
+              category: tag.category || null,
+            };
+          } else if (segmentationCriteria === "go_high_level") {
+            return {
+              id: tag.value,
+              name: tag.label,
+              locationId: tag.locationId || "",
+            };
+          }
+        });
+
+        let apiURL = "";
+        if (segmentationCriteria === "keap") {
+          apiURL = "/tag_management/save_tags/keap/";
+        } else if (segmentationCriteria === "go_high_level") {
+          apiURL = "/tag_management/save_tags/go_high_level/";
+        }
+
+        console.log("payload :: ", payload);
+
+        const response = await postAsArray(apiURL, payload);
+
+        console.log("Response :: ", response);
+
+        if (response.status === 201 || response.status === 200) {
+          console.log("Form submitted successfully");
+          setPopup({
+            show: true,
+            message: "Tags saved successfully!",
+            type: "success",
+          });
+        }
+      } catch (error) {
+        console.error("Error submitting tags:", error);
+        setPopup({
+          show: true,
+          message: "Failed to submit tags",
+          type: "error",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -223,11 +356,21 @@ export default function TagsManagement() {
                       { label: "Keap", value: "keap" },
                       { label: "Go High Level", value: "go_high_level" },
                     ]}
-                    value={segmentationCriteria}
-                    onChange={(value) => {
+                    value={
+                      segmentationCriteria
+                        ? {
+                            value: segmentationCriteria,
+                            label:
+                              segmentationCriteria === "keap"
+                                ? "Keap"
+                                : "Go High Level",
+                          }
+                        : null
+                    }
+                    onChange={(selectedOption) => {
+                      const value = selectedOption ? selectedOption.value : "";
                       setSegmentationCriteria(value);
                       setSegmentationCriteriaError("");
-                      fetchTags(value);
                     }}
                     styles={customStyles}
                     placeholder="Select Segmentation Criteria"
@@ -242,8 +385,7 @@ export default function TagsManagement() {
 
                 {/* input 2 */}
                 <div className={styles.inputGroup}>
-                  <label>Tag Assigned*</label>
-
+                  <label>Tag*</label>
                   <Select
                     isMulti
                     name="tags"
@@ -256,17 +398,23 @@ export default function TagsManagement() {
                               isDisabled: true,
                             },
                           ]
-                        : tags.length > 0
+                        : rawTags.length > 0
                         ? [
-                            {
-                              value: "",
-                              label: "Fetching tags...",
-                              isDisabled: true,
-                            },
-                            ...tags.map((tag) => ({
-                              value: tag.id,
-                              label: tag.tag_name,
-                            })),
+                            ...rawTags.map((tag) => {
+                              if ("locationId" in tag) {
+                                return {
+                                  value: tag.id,
+                                  label: tag.name,
+                                  locationId: tag.locationId,
+                                };
+                              }
+                              return {
+                                value: tag.id,
+                                label: tag.name,
+                                description: tag.description,
+                                category: tag.category,
+                              };
+                            }),
                           ]
                         : [
                             {
@@ -279,8 +427,9 @@ export default function TagsManagement() {
                     value={tagAssigned}
                     onChange={handleTagChange}
                     styles={customStyles}
+                    onScroll={loadMoreTags}
                     placeholder={
-                      tagsLoading ? "Loading..." : "Search and Select Tags"
+                      isloading ? "Loading..." : "Search and Select Tags"
                     }
                   />
 
@@ -288,7 +437,9 @@ export default function TagsManagement() {
                 </div>
 
                 <div className={styles.buttonGroup}>
-                  <button className={styles.saveButton}>Save</button>
+                  <button className={styles.saveButton} disabled={isSubmitting}>
+                    {isSubmitting ? <Loader position="top" /> : "Save"}
+                  </button>
                   <button
                     className={styles.resetButton}
                     onClick={(e) => {
@@ -297,6 +448,7 @@ export default function TagsManagement() {
                       setTagAssigned("");
                       setTagError("");
                       setSegmentationCriteriaError("");
+                      setIsLoading(false);
                     }}
                   >
                     Reset
@@ -306,6 +458,13 @@ export default function TagsManagement() {
             </div>
           </div>
         </div>
+        {popup.show && (
+          <Popup
+            message={popup.message}
+            type={popup.type}
+            onClose={() => setPopup({ ...popup, show: false })}
+          />
+        )}
       </div>
     </div>
   );

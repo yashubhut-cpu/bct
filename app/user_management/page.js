@@ -696,7 +696,7 @@ export default function Usermanagement() {
                   }}
                   disabled={isSubmitting}
                 >
-                  {/* Recycle Icon (Rounded cancel logo) */}
+                  {/* Recycle Icon */}
                   <span className="mr-2">
                     <img src="/images/clear_logo.svg" alt="Recycle Icon" />
                   </span>

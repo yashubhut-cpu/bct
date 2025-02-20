@@ -31,7 +31,7 @@ const CustomSelect = ({ options, value, onChange, placeholder }) => {
         onClick={() => setIsOpen((prev) => !prev)}
       >
         {value ? (
-          <span className="text-slate-400">
+          <span className="text-white">
             {options.find((opt) => opt.value === value)?.label}
           </span>
         ) : (

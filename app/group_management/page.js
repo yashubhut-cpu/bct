@@ -99,19 +99,31 @@ export default function Groupmanagement() {
       setTags([]);
       return;
     }
-    setTagLoader(true);
+
     try {
       const response = await get(apiUrl);
+      console.log("response ::", response);
+
       if (response.status === 200) {
-        const data = await response.data;
-        setTags(data.tags);
+        let data = response.data.tags || [];
+
+        if (value === "keap") {
+          data = data.map((tag) => ({
+            ...tag,
+            tag_name: tag.tag_extra_details
+              ? `${tag.tag_extra_details.name} -> ${tag.tag_name}`
+              : tag.tag_name,
+          }));
+        }
+
+        console.log("Updated Tags Data ::", data);
+        setTags(data);
       } else {
         throw new Error("Failed to fetch tags");
       }
     } catch (error) {
+      console.error("Error fetching tags:", error);
       setTags([]);
-    } finally {
-      setTagLoader(false);
     }
   };
 
@@ -681,11 +693,6 @@ export default function Groupmanagement() {
                         ]
                       : tags.length > 0
                       ? [
-                          {
-                            value: "",
-                            label: "Fetching tags...",
-                            isDisabled: true,
-                          },
                           ...tags.map((tag) => ({
                             value: tag.id,
                             label: tag.tag_name,

@@ -18,7 +18,7 @@ const Select = dynamic(() => import("react-select"), { ssr: false });
 export default function InputTradeAlert() {
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
-
+  const [isGroupLoading, setIsGroupLoading] = useState(false);
   const [groups, setGroups] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setloading] = useState(false);
@@ -162,7 +162,7 @@ export default function InputTradeAlert() {
       setGroups([]);
       return;
     }
-    setloading(true);
+    setIsGroupLoading(true);
     try {
       const response = await get(apiUrl);
 
@@ -180,7 +180,7 @@ export default function InputTradeAlert() {
       console.error("Error fetching groups:", error);
       setGroups([]);
     } finally {
-      setloading(false);
+      setIsGroupLoading(false);
     }
   };
 
@@ -517,7 +517,7 @@ export default function InputTradeAlert() {
                             className="placeholder-[#888]"
                             onChange={handleGroupChange}
                             placeholder={
-                              loading
+                              isGroupLoading
                                 ? "Loading groups..."
                                 : "Search and select groups"
                             }
