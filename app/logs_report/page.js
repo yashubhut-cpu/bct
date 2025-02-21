@@ -12,6 +12,7 @@ import DatePicker from "react-datepicker";
 import columnsConfig from "../columnsConfig";
 import Header from "../component/Header/header";
 import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
 import "jspdf-autotable";
 import "@fontsource/be-vietnam-pro";
 import "@fontsource/be-vietnam-pro/400.css";
@@ -135,11 +136,11 @@ export default function Logreport() {
     } finally {
       setLoading(false);
     }
-  }, [filterState, page, alertPerPage]); // Added dependencies
+  }, [filterState, page, alertPerPage]);
 
   useEffect(() => {
     fetchAlerts();
-  }, [fetchAlerts]); // Now fetchAlerts is stable
+  }, [fetchAlerts]);
 
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) {
@@ -218,7 +219,7 @@ export default function Logreport() {
     } catch (error) {
       setGroups([]);
     }
-  }, [formValue.segmentation]); // Add dependencies to keep it stable
+  }, [formValue.segmentation]);
 
   useEffect(() => {
     fetchGroups();
@@ -240,70 +241,174 @@ export default function Logreport() {
     };
   }, [isOpen]);
 
-  // Handle individual row checkbox change
+  // const handleSelectAll = useCallback(() => {
+  //   const newCheckedState = !allChecked;
+  //   setAllChecked(newCheckedState);
+
+  //   const updatedSelectedRows = new Set(selectedRows);
+  //   if (newCheckedState) {
+  //     alerts.forEach((alert) => updatedSelectedRows.add(alert.id));
+  //   } else {
+  //     alerts.forEach((alert) => updatedSelectedRows.delete(alert.id));
+  //   }
+  //   setSelectedRows(updatedSelectedRows);
+
+  //   console.log("Select All:", newCheckedState);
+  //   console.log("Updated selectedRows:", updatedSelectedRows);
+  // }, [allChecked, alerts, selectedRows]);
+
+  // const handleRowChange = useCallback(
+  //   (id) => {
+  //     const updatedSelectedRows = new Set(selectedRows);
+  //     if (updatedSelectedRows.has(id)) {
+  //       updatedSelectedRows.delete(id);
+  //     } else {
+  //       updatedSelectedRows.add(id);
+  //     }
+  //     setSelectedRows(updatedSelectedRows);
+
+  //     console.log(`Row ${id} checkbox toggled:`, updatedSelectedRows.has(id));
+  //     console.log("Updated selectedRows:", updatedSelectedRows);
+  //   },
+  //   [selectedRows]
+  // );
+
+  // const handleDownloadPDF = () => {
+  //   const selectedAlerts = tradeAlerts.filter((alert) =>
+  //     selectedRows.has(alert.id)
+  //   );
+
+  //   if (selectedAlerts.length === 0) {
+  //     alert(
+  //       "No alerts selected. Please select at least one alert to generate the PDF."
+  //     );
+  //     return;
+  //   }
+
+  //   console.log("Selected Rows for PDF:", selectedAlerts);
+
+  //   const doc = new jsPDF();
+
+  //   const tableColumn = [
+  //     "Date & Time",
+  //     "Trade Details",
+  //     "Distribution Channel",
+  //     "Group Name",
+  //     "Editor Name",
+  //   ];
+
+  //   const tableRows = selectedAlerts.map((alert) => [
+  //     alert.date_time,
+  //     alert.trade_details,
+  //     alert.distribution_channel,
+  //     alert.group_name,
+  //     alert.editor_name,
+  //   ]);
+
+  //   doc.autoTable({
+  //     head: [tableColumn],
+  //     body: tableRows,
+  //     startY: 20,
+  //   });
+
+  //   doc.save("selected_alerts.pdf");
+  // };
+
   const handleRowChange = (id) => {
     const updatedSelectedRows = new Set(selectedRows);
     if (updatedSelectedRows.has(id)) {
-      updatedSelectedRows.delete(id); // Deselect the row
+      updatedSelectedRows.delete(id);
     } else {
-      updatedSelectedRows.add(id); // Select the row
+      updatedSelectedRows.add(id);
     }
     setSelectedRows(updatedSelectedRows);
-
-    // Update "Select All" state
-    setIsAllSelected(updatedSelectedRows.size === alerts.length);
-
-    // Log the individual row checkbox change
-    console.log(`Row ${id} checkbox toggled:`, updatedSelectedRows.has(id));
-    console.log("Updated selectedRows:", updatedSelectedRows);
+    setIsAllSelected(updatedSelectedRows.size === tradeAlerts.length);
   };
 
-  // Handle "Select All" checkbox
   const handleSelectAll = () => {
     const newCheckedState = !isAllSelected;
     setIsAllSelected(newCheckedState);
 
     if (newCheckedState) {
-      // Select all rows across all pages
-      const allRowIds = alerts.map((alert) => alert.id);
+      const allRowIds = tradeAlerts.map((alert) => alert.id);
       setSelectedRows(new Set(allRowIds));
     } else {
-      // Deselect all rows
       setSelectedRows(new Set());
     }
-
-    // Log the "Select All" action
-    console.log("Select All:", newCheckedState);
-    console.log(
-      "Updated selectedRows:",
-      newCheckedState ? new Set(alerts.map((alert) => alert.id)) : new Set()
-    );
   };
 
-  // Handle PDF download for selected rows
   const handleDownloadPDF = () => {
+    const selectedAlerts = tradeAlerts.filter((alert) =>
+      selectedRows.has(alert.id)
+    );
+
+    if (selectedAlerts.length === 0) {
+      alert(
+        "No alerts selected. Please select at least one alert to generate the PDF."
+      );
+      return;
+    }
+
     const doc = new jsPDF();
-    const tableColumn = ["ID", "Name", "Description"]; // Adjust columns as needed
-    const tableRows = [];
+    const tableColumn = [
+      "Date & Time",
+      "Trade Details",
+      "Distribution Channel",
+      "Group Name",
+      "Editor Name",
+    ];
 
-    // Log the selected rows before generating the PDF
-    const selectedAlerts = alerts.filter((alert) => selectedRows.has(alert.id));
-    console.log("Selected Rows for PDF:", selectedAlerts);
+    const tableRows = selectedAlerts.map((alert) => [
+      alert.date_time,
+      alert.trade_details,
+      alert.distribution_channel,
+      alert.group_name,
+      alert.editor_name,
+    ]);
 
-    // Add only selected rows to the PDF
-    selectedAlerts.forEach((alert) => {
-      const rowData = [
-        alert.id,
-        alert.name,
-        alert.description,
-        // Add more fields as needed
-      ];
-      tableRows.push(rowData);
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
     });
 
-    // Generate the PDF table
-    doc.autoTable(tableColumn, tableRows, { startY: 20 });
-    doc.save("selected_rows.pdf");
+    doc.save("selected_alerts.pdf");
+  };
+
+  const handleDownloadExcel = () => {
+    const selectedAlerts = tradeAlerts.filter((alert) =>
+      selectedRows.has(alert.id)
+    );
+
+    if (selectedAlerts.length === 0) {
+      alert(
+        "No alerts selected. Please select at least one alert to generate the Excel file."
+      );
+      return;
+    }
+
+    const tableColumn = [
+      "Date & Time",
+      "Trade Details",
+      "Distribution Channel",
+      "Group Name",
+      "Editor Name",
+    ];
+
+    const tableRows = selectedAlerts.map((alert) => ({
+      "Date & Time": alert.date_time,
+      "Trade Details": alert.trade_details,
+      "Distribution Channel": alert.distribution_channel,
+      "Group Name": alert.group_name,
+      "Editor Name": alert.editor_name,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(tableRows, { header: tableColumn });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Selected Alerts");
+
+    XLSX.writeFile(wb, "selected_alerts.xlsx");
   };
 
   return (
@@ -365,7 +470,7 @@ export default function Logreport() {
                     <button
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-200"
                       role="menuitem"
-                      onClick={() => setIsOpen(false)}
+                      onClick={handleDownloadExcel}
                     >
                       Download Excel
                     </button>

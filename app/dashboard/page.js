@@ -230,7 +230,7 @@ export default function Dashboard() {
   const handleEyeClick = (id) => {
     if (id) {
       console.log("id", id);
-      router.push(`/errornotification?id=${id}`);
+      router.push(`/error_notification?id=${id}`);
     }
   };
 

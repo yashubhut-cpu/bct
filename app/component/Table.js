@@ -8,9 +8,10 @@ import {
   XCircleIcon,
 } from "@heroicons/react/20/solid";
 import { MdLockReset } from "react-icons/md";
-import React, { useState } from "react";
+import React from "react";
 import styles from "./table.module.css";
 import Loading from "./loading";
+
 const Checkbox = ({ id, checked, onChange }) => {
   return (
     <div className={styles.checkBoxContainer}>
@@ -44,39 +45,11 @@ const Table = ({
   onPasswordResetClick,
   onEyeIconClick,
   loading,
+  selectedRows = new Set(),
+  onRowChange,
+  onSelectAll,
+  isAllSelected,
 }) => {
-  const [allChecked, setAllChecked] = useState(false);
-  const [selectedRows, setSelectedRows] = useState(new Set());
-
-  const handleSelectAll = () => {
-    const newCheckedState = !allChecked;
-    setAllChecked(newCheckedState);
-
-    const updatedSelectedRows = new Set(selectedRows);
-    if (newCheckedState) {
-      alerts.forEach((alert) => updatedSelectedRows.add(alert.id));
-    } else {
-      alerts.forEach((alert) => updatedSelectedRows.delete(alert.id));
-    }
-    setSelectedRows(updatedSelectedRows);
-
-    console.log("Select All:", newCheckedState);
-    console.log("Updated selectedRows:", updatedSelectedRows);
-  };
-
-  const handleRowChange = (id) => {
-    const updatedSelectedRows = new Set(selectedRows);
-    if (updatedSelectedRows.has(id)) {
-      updatedSelectedRows.delete(id); // Deselect the row
-    } else {
-      updatedSelectedRows.add(id); // Select the row
-    }
-    setSelectedRows(updatedSelectedRows);
-
-    console.log(`Row ${id} checkbox toggled:`, updatedSelectedRows.has(id));
-    console.log("Updated selectedRows:", updatedSelectedRows);
-  };
-
   return (
     <div>
       <table className="w-full text-left text-sm text-white">
@@ -87,8 +60,8 @@ const Table = ({
               <th className="border-b">
                 <Checkbox
                   id={"selectAll"}
-                  checked={allChecked}
-                  onChange={handleSelectAll}
+                  checked={isAllSelected}
+                  onChange={onSelectAll}
                 />
               </th>
             )}
@@ -119,7 +92,6 @@ const Table = ({
             {visibleColumns.includes("name") && (
               <th className="border-b">NAME</th>
             )}
-
             {visibleColumns.includes("email") && (
               <th className="border-b">EMAIL</th>
             )}
@@ -175,10 +147,10 @@ const Table = ({
           ) : (
             alerts.map((alert, index) => (
               <TableRow
-                key={alert.id}
+                key={alert.id || index}
                 id={alert.id}
                 checked={selectedRows.has(alert.id)}
-                onChange={() => handleRowChange(alert.id)}
+                onChange={() => onRowChange(alert.id)}
                 title={alert.title}
                 trade_details={alert.trade_details}
                 distribution_channel={alert.distribution_channel}

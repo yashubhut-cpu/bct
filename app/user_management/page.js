@@ -551,7 +551,6 @@ export default function Usermanagement() {
                   <span className={styles.error}>{errors.firstName}</span>
                 )}
               </div>
-
               {/* Last Name Field */}
               <div className="mb-4">
                 <label
@@ -572,7 +571,6 @@ export default function Usermanagement() {
                   <span className={styles.error}>{errors.lastName}</span>
                 )}
               </div>
-
               {/* Email Field */}
               <div className="mb-4">
                 <label
@@ -593,7 +591,6 @@ export default function Usermanagement() {
                   <span className={styles.error}>{errors.email}</span>
                 )}
               </div>
-
               {/* User Role Field */}
               <div className="mb-4">
                 <label
@@ -621,7 +618,6 @@ export default function Usermanagement() {
                   <span className={styles.error}>{errors.Role}</span>
                 )}
               </div>
-
               <div className={styles.field8 + " mb-4"}>
                 <label>Assign Groups</label>
                 <div className={styles.selectWrapper}>
@@ -642,7 +638,6 @@ export default function Usermanagement() {
                   )}
                 </div>
               </div>
-
               <div className="flex items-center space-x-2 mb-5">
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -661,7 +656,7 @@ export default function Usermanagement() {
                   Status <span className="text-red-500">*</span>
                 </span>
               </div>
-
+              
               <div className="mb-4 flex justify-start space-x-4">
                 {/* Submit Button */}
                 <button
