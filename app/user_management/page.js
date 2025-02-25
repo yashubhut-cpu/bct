@@ -17,6 +17,7 @@ import ConfirmationDialog from "../component/ConfirmationDialog";
 import Popup from "../component/Popup";
 import CustomSelect from "../component/CustomSelect";
 import Loading from "../component/loading";
+import ProtectedPage from "../ProtectedPage";
 export default function Usermanagement() {
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
@@ -429,294 +430,301 @@ export default function Usermanagement() {
   };
 
   return (
-    <div className={styles.dashboardContainer}>
-      <Sidebar
-        isCollapsed={isSidebarActive}
-        toggleSidebar={toggleSidebar}
-        isMobileActive={isMobileSidebarActive}
-      />
-      {/* Conditionally applying the class for main content */}
-      <Header toggleSidebar={toggleMobileSidebar} />
-      <div
-        className={`${
-          isSidebarActive ? styles.mainContent : styles.sidebarActive
-        }`}
-      >
-        <div className={styles.pageContent}>
-          {/* Group Management Section */}
-          <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
-            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
-              User Management
-            </h2>
-            <button className={styles.pageButton} onClick={() => togglePanel()}>
-              <img src="/images/add_user.svg" alt="Add Group Icon" />
-              Add New User
-            </button>
-          </div>
+    <ProtectedPage>
+      <div className={styles.dashboardContainer}>
+        <Sidebar
+          isCollapsed={isSidebarActive}
+          toggleSidebar={toggleSidebar}
+          isMobileActive={isMobileSidebarActive}
+        />
+        {/* Conditionally applying the class for main content */}
+        <Header toggleSidebar={toggleMobileSidebar} />
+        <div
+          className={`${
+            isSidebarActive ? styles.mainContent : styles.sidebarActive
+          }`}
+        >
+          <div className={styles.pageContent}>
+            {/* Group Management Section */}
+            <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
+              <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
+                User Management
+              </h2>
+              <button
+                className={styles.pageButton}
+                onClick={() => togglePanel()}
+              >
+                <img src="/images/add_user.svg" alt="Add Group Icon" />
+                Add New User
+              </button>
+            </div>
 
-          {/* Table Content */}
-          <div className="mx-2 mb-4">
-            <div className="bg-[#1C2546] rounded-[20px] shadow relative">
-              <div className={styles.tableSection}>
-                <div
-                  className={styles.tableContainer + " scrollbar"}
-                  id="style-2"
-                >
+            {/* Table Content */}
+            <div className="mx-2 mb-4">
+              <div className="bg-[#1C2546] rounded-[20px] shadow relative">
+                <div className={styles.tableSection}>
                   <div
-                    className={styles.tableContent + " force-overflow p-4 pt-0"}
+                    className={styles.tableContainer + " scrollbar"}
+                    id="style-2"
                   >
-                    <Table
-                      alerts={users}
-                      visibleColumns={columnsConfig.usermanagement}
-                      onEditClick={handleEditClick}
-                      onDeleteClick={handleDeleteClick}
-                      onPasswordResetClick={handlePasswordReset}
-                      loading={loading}
-                    />
+                    <div
+                      className={
+                        styles.tableContent + " force-overflow p-4 pt-0"
+                      }
+                    >
+                      <Table
+                        alerts={users}
+                        visibleColumns={columnsConfig.usermanagement}
+                        onEditClick={handleEditClick}
+                        onDeleteClick={handleDeleteClick}
+                        onPasswordResetClick={handlePasswordReset}
+                        loading={loading}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Pagination Section */}
-              <div className={styles.pagination + " p-4"}>
-                <button
-                  className={styles.paginationButton}
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                {Array.from({ length: totalPages }, (_, index) => (
+                {/* Pagination Section */}
+                <div className={styles.pagination + " p-4"}>
                   <button
-                    key={index}
-                    className={`${styles.paginationButton} ${
-                      page === index + 1 ? styles.active : ""
-                    }`}
-                    onClick={() => handlePageChange(index + 1)}
+                    className={styles.paginationButton}
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
                   >
-                    {index + 1}
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
-                ))}
-                <button
-                  className={styles.paginationButton}
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <button
+                      key={index}
+                      className={`${styles.paginationButton} ${
+                        page === index + 1 ? styles.active : ""
+                      }`}
+                      onClick={() => handlePageChange(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                  <button
+                    className={styles.paginationButton}
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Sliding Panel */}
-        <SlidingPanel
-          isOpen={isPanelOpen}
-          onClose={togglePanel}
-          width="w-[700px]"
-          style={{
-            height: "685px",
-            top: "0px",
-            left: "998px",
-            gap: "20px",
+          {/* Sliding Panel */}
+          <SlidingPanel
+            isOpen={isPanelOpen}
+            onClose={togglePanel}
+            width="w-[700px]"
+            style={{
+              height: "685px",
+              top: "0px",
+              left: "998px",
+              gap: "20px",
 
-            opacity: isPanelOpen ? 1 : 0,
-            transition: "opacity 0.3s ease-in-out",
-          }}
-        >
-          {/* Header Text */}
-          <div className="p-4 pb-0 force-overflow">
-            <h2 className="text-white text-[36px]">Add/Edit User</h2>
-          </div>
-          {/* Form Content */}
-          <div className="p-6 bg-[#1C2546] text-white rounded-b-lg">
-            <form onSubmit={handleSubmit}>
-              {/* First Name Field */}
-              <div className="mb-4">
-                <label
-                  htmlFor="firstName"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="firstName"
-                  placeholder="Enter your first name here"
-                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.firstName}
-                  onChange={handleInputChange}
-                />
-                {errors.firstName && (
-                  <span className={styles.error}>{errors.firstName}</span>
-                )}
-              </div>
-              {/* Last Name Field */}
-              <div className="mb-4">
-                <label
-                  htmlFor="lastName"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  placeholder="Enter your last name here"
-                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.lastName}
-                  onChange={handleInputChange}
-                />
-                {errors.lastName && (
-                  <span className={styles.error}>{errors.lastName}</span>
-                )}
-              </div>
-              {/* Email Field */}
-              <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="email"
-                  placeholder="You're email goes here"
-                  type="text"
-                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.email}
-                  onChange={handleInputChange}
-                ></input>
-                {errors.email && (
-                  <span className={styles.error}>{errors.email}</span>
-                )}
-              </div>
-              {/* User Role Field */}
-              <div className="mb-4">
-                <label
-                  htmlFor="Role"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  User Role <span className="text-red-500">*</span>
-                </label>
-
-                <CustomSelect
-                  id="Role"
-                  value={formValues.Role}
-                  options={[
-                    { value: "editor", label: "Editor" },
-                    { value: "admin", label: "Admin" },
-                  ]}
-                  onChange={(newRole) =>
-                    handleInputChange({
-                      target: { id: "Role", value: newRole },
-                    })
-                  }
-                  placeholder="Select User Role"
-                />
-                {errors.Role && (
-                  <span className={styles.error}>{errors.Role}</span>
-                )}
-              </div>
-              <div className={styles.field8 + " mb-4"}>
-                <label>Assign Groups</label>
-                <div className={styles.selectWrapper}>
-                  <Select
-                    isMulti
-                    options={groups}
-                    value={formValues.assignedGroups}
-                    onChange={handleGroupChange}
-                    placeholder="Search and select groups"
-                    instanceId="assigned-groups-select"
-                    classNamePrefix="select"
-                    styles={customStyles}
+              opacity: isPanelOpen ? 1 : 0,
+              transition: "opacity 0.3s ease-in-out",
+            }}
+          >
+            {/* Header Text */}
+            <div className="p-4 pb-0 force-overflow">
+              <h2 className="text-white text-[36px]">Add/Edit User</h2>
+            </div>
+            {/* Form Content */}
+            <div className="p-6 bg-[#1C2546] text-white rounded-b-lg">
+              <form onSubmit={handleSubmit}>
+                {/* First Name Field */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="firstName"
+                    className="block text-white text-sm font-medium mb-2"
+                  >
+                    First Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    placeholder="Enter your first name here"
+                    className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
+                    value={formValues.firstName}
+                    onChange={handleInputChange}
                   />
-                  {errors.assignedGroups && (
-                    <span className={styles.error}>
-                      {errors.assignedGroups}
-                    </span>
+                  {errors.firstName && (
+                    <span className={styles.error}>{errors.firstName}</span>
                   )}
                 </div>
-              </div>
-              <div className="flex items-center space-x-2 mb-5">
-                <label className="relative inline-flex items-center cursor-pointer">
+                {/* Last Name Field */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="lastName"
+                    className="block text-white text-sm font-medium mb-2"
+                  >
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
                   <input
-                    id="status"
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={active}
-                    onChange={handleToggle}
+                    type="text"
+                    id="lastName"
+                    placeholder="Enter your last name here"
+                    className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
+                    value={formValues.lastName}
+                    onChange={handleInputChange}
                   />
-                  <div className="w-10 h-6 bg-[#000] rounded-full peer peer-checked:bg-[#4E71F3] transition duration-300"></div>
-                  <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full peer-checked:translate-x-4 transition-transform duration-300"></div>
-                </label>
-                <span>{active ? "Active" : "Not Active"}</span>
-
-                <span className="text-white font-medium">
-                  Status <span className="text-red-500">*</span>
-                </span>
-              </div>
-              
-              <div className="mb-4 flex justify-start space-x-4">
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <Loading color={"white"} />
-                    </div>
-                  ) : editingUser ? (
-                    "Update User"
-                  ) : (
-                    "Submit & Save"
+                  {errors.lastName && (
+                    <span className={styles.error}>{errors.lastName}</span>
                   )}
-                </button>
-                {/* Clear Button */}
-                <button
-                  type="button"
-                  className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"
-                  onClick={() => {
-                    setFormValues({
-                      firstName: "",
-                      lastName: "",
-                      email: "",
-                      Role: "",
-                      assignedGroups: [],
-                    });
-                    setErrors({});
-                  }}
-                  disabled={isSubmitting}
-                >
-                  {/* Recycle Icon */}
-                  <span className="mr-2">
-                    <img src="/images/clear_logo.svg" alt="Recycle Icon" />
+                </div>
+                {/* Email Field */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="email"
+                    className="block text-white text-sm font-medium mb-2"
+                  >
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="email"
+                    placeholder="You're email goes here"
+                    type="text"
+                    className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
+                    value={formValues.email}
+                    onChange={handleInputChange}
+                  ></input>
+                  {errors.email && (
+                    <span className={styles.error}>{errors.email}</span>
+                  )}
+                </div>
+                {/* User Role Field */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="Role"
+                    className="block text-white text-sm font-medium mb-2"
+                  >
+                    User Role <span className="text-red-500">*</span>
+                  </label>
+
+                  <CustomSelect
+                    id="Role"
+                    value={formValues.Role}
+                    options={[
+                      { value: "editor", label: "Editor" },
+                      { value: "admin", label: "Admin" },
+                    ]}
+                    onChange={(newRole) =>
+                      handleInputChange({
+                        target: { id: "Role", value: newRole },
+                      })
+                    }
+                    placeholder="Select User Role"
+                  />
+                  {errors.Role && (
+                    <span className={styles.error}>{errors.Role}</span>
+                  )}
+                </div>
+                <div className={styles.field8 + " mb-4"}>
+                  <label>Assign Groups</label>
+                  <div className={styles.selectWrapper}>
+                    <Select
+                      isMulti
+                      options={groups}
+                      value={formValues.assignedGroups}
+                      onChange={handleGroupChange}
+                      placeholder="Search and select groups"
+                      instanceId="assigned-groups-select"
+                      classNamePrefix="select"
+                      styles={customStyles}
+                    />
+                    {errors.assignedGroups && (
+                      <span className={styles.error}>
+                        {errors.assignedGroups}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 mb-5">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      id="status"
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={active}
+                      onChange={handleToggle}
+                    />
+                    <div className="w-10 h-6 bg-[#000] rounded-full peer peer-checked:bg-[#4E71F3] transition duration-300"></div>
+                    <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full peer-checked:translate-x-4 transition-transform duration-300"></div>
+                  </label>
+                  <span>{active ? "Active" : "Not Active"}</span>
+
+                  <span className="text-white font-medium">
+                    Status <span className="text-red-500">*</span>
                   </span>
-                  Clear
-                </button>
-              </div>
-            </form>
-          </div>
-        </SlidingPanel>
+                </div>
 
-        <ConfirmationDialog
-          isOpen={isConfirmDialogOpen}
-          onClose={() => setIsConfirmDialogOpen(false)}
-          onConfirm={confirmDelete}
-          title="Delete User"
-          message="Are you sure you want to delete this user?"
-        />
+                <div className="mb-4 flex justify-start space-x-4">
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center justify-center">
+                        <Loading color={"white"} />
+                      </div>
+                    ) : editingUser ? (
+                      "Update User"
+                    ) : (
+                      "Submit & Save"
+                    )}
+                  </button>
+                  {/* Clear Button */}
+                  <button
+                    type="button"
+                    className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"
+                    onClick={() => {
+                      setFormValues({
+                        firstName: "",
+                        lastName: "",
+                        email: "",
+                        Role: "",
+                        assignedGroups: [],
+                      });
+                      setErrors({});
+                    }}
+                    disabled={isSubmitting}
+                  >
+                    {/* Recycle Icon */}
+                    <span className="mr-2">
+                      <img src="/images/clear_logo.svg" alt="Recycle Icon" />
+                    </span>
+                    Clear
+                  </button>
+                </div>
+              </form>
+            </div>
+          </SlidingPanel>
 
-        {popup.show && (
-          <Popup
-            message={popup.message}
-            type={popup.type}
-            onClose={() => setPopup({ ...popup, show: false })}
+          <ConfirmationDialog
+            isOpen={isConfirmDialogOpen}
+            onClose={() => setIsConfirmDialogOpen(false)}
+            onConfirm={confirmDelete}
+            title="Delete User"
+            message="Are you sure you want to delete this user?"
           />
-        )}
+
+          {popup.show && (
+            <Popup
+              message={popup.message}
+              type={popup.type}
+              onClose={() => setPopup({ ...popup, show: false })}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </ProtectedPage>
   );
 }

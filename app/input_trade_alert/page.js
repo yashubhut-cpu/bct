@@ -13,6 +13,7 @@ import CustomSelect from "../component/CustomSelect";
 import { get, post } from "../api/base";
 import Popup from "../component/Popup";
 import Loading from "../component/loading";
+import ProtectedPage from "../ProtectedPage";
 const Select = dynamic(() => import("react-select"), { ssr: false });
 
 export default function InputTradeAlert() {
@@ -354,261 +355,280 @@ export default function InputTradeAlert() {
   };
 
   return (
-    <div className={styles.dashboardContainer}>
-      {/* Sidebar */}
-      <Sidebar
-        isCollapsed={isSidebarActive}
-        toggleSidebar={toggleSidebar}
-        isMobileActive={isMobileSidebarActive}
-        closeSidebar={toggleMobileSidebar}
-      />
-      <Header toggleSidebar={toggleMobileSidebar} />
-      <div
-        className={`${
-          isSidebarActive ? styles.mainContent : styles.sidebarActive
-        }`}
-      >
-        {/* Main Dashboard */}
-        <div className={styles.container2}>
-          {/* Input Trade Alert Content */}
-          <div className={styles.pageContent}>
-            <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
-              <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
-                Input Trade Alert
-              </h2>
-            </div>
-            <div className="mx-2 mb-4">
-              <div className="bg-[#1C2546] p-4 rounded-[20px] shadow">
-                <form onSubmit={handleSubmit}>
-                  <div className={styles.fieldSection}>
-                    {/* Trade Title */}
-                    <div className={styles.inputField}>
-                      <div className={styles.field1}>
-                        <label>Trade title*</label>
-                        <input
-                          id="tradeTitle"
-                          type="text"
-                          placeholder="Enter your trade title"
-                          value={formValues.tradeTitle}
-                          onChange={handleInputChange}
-                        />
-                        {errors.tradeTitle && (
-                          <span className={styles.error}>
-                            {errors.tradeTitle}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Entry Section */}
-                      <div className="entrySection flex flex-col sm:flex-row md:flex-row lg:flex-row gap-4 mb-5 mt-4">
-                        {/* Ticker Symbol */}
-                        <div className="field2 w-full sm:w-1/3">
-                          <label className="block  font-semibold">
-                            Ticker Symbol
+    <ProtectedPage>
+      <div className={styles.dashboardContainer}>
+        {/* Sidebar */}
+        <Sidebar
+          isCollapsed={isSidebarActive}
+          toggleSidebar={toggleSidebar}
+          isMobileActive={isMobileSidebarActive}
+          closeSidebar={toggleMobileSidebar}
+        />
+        <Header toggleSidebar={toggleMobileSidebar} />
+        <div
+          className={`${
+            isSidebarActive ? styles.mainContent : styles.sidebarActive
+          }`}
+        >
+          {/* Main Dashboard */}
+          <div className={styles.container2}>
+            {/* Input Trade Alert Content */}
+            <div className={styles.pageContent}>
+              <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
+                <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
+                  Input Trade Alert
+                </h2>
+              </div>
+              <div className="mx-2 mb-4">
+                <div className="bg-[#1C2546] p-4 rounded-[20px] shadow">
+                  <form onSubmit={handleSubmit}>
+                    <div className={styles.fieldSection}>
+                      {/* Trade Title */}
+                      <div className={styles.inputField}>
+                        <div className={styles.field1}>
+                          <label>
+                            Trade title <span className="text-red-500">*</span>
                           </label>
                           <input
+                            id="tradeTitle"
                             type="text"
-                            id="tickerSymbol"
-                            placeholder="TYP"
-                            className="w-full p-2 border border-gray-300 rounded"
-                            value={formValues.tickerSymbol}
+                            placeholder="Enter your trade title"
+                            value={formValues.tradeTitle}
                             onChange={handleInputChange}
                           />
-                        </div>
-
-                        {/* Entry Price */}
-                        <div className="field3 w-full sm:w-1/3">
-                          <label className="block  font-semibold">
-                            Entry Price
-                          </label>
-                          <input
-                            type="number"
-                            id="entryPrice"
-                            placeholder="$ 0.00"
-                            className="w-full p-2 border border-gray-300 rounded"
-                            value={formValues.entryPrice}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-
-                        {/* Exit Price */}
-                        <div className="field4 w-full sm:w-1/3">
-                          <label className="block  font-semibold">
-                            Exit Price
-                          </label>
-                          <input
-                            id="exitPrice"
-                            type="number"
-                            placeholder="$ 0.00"
-                            className="w-full p-2 border border-gray-300 rounded"
-                            value={formValues.exitPrice}
-                            onChange={handleInputChange}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Trade Description */}
-                      <div className={styles.field5}>
-                        <label style={{ marginBottom: "20px" }}>
-                          Trade Description*
-                        </label>
-                        <Home
-                          onChange={(value) => handleInputChange(value)}
-                          value={formValues.tradeDescription}
-                        />
-                      </div>
-
-                      {/* Email Subject */}
-                      <div className={styles.field6}>
-                        <label>Email Subject*</label>
-                        <input
-                          id="emailSubject"
-                          type="text"
-                          placeholder="Write an email subject"
-                          value={formValues.emailSubject}
-                          onChange={handleInputChange}
-                        />
-                        {errors.emailSubject && (
-                          <span className={styles.error}>
-                            {errors.emailSubject}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Segmentation Criteria */}
-                      <div className={styles.field7}>
-                        <label htmlFor="segmentation">
-                          Segmentation Criteria*
-                        </label>
-                        <CustomSelect
-                          id="segmentation"
-                          options={[
-                            { value: "keap", label: "Keap" },
-                            { value: "go_high_level", label: "Go High Level" },
-                          ]}
-                          value={formValues.segmentation}
-                          onChange={(newValue) =>
-                            handleInputChange({
-                              id: "segmentation",
-                              value: newValue,
-                            })
-                          }
-                          placeholder="Select segmentation criteria"
-                        />
-                        {errors.segmentation && (
-                          <span className={styles.error}>
-                            {errors.segmentation}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Group Selection */}
-                      <div className={styles.field8}>
-                        <label>Group Selection*</label>
-                        <div className={styles.selectWrapper}>
-                          <Select
-                            key={groups.length}
-                            isMulti
-                            name="groups"
-                            options={groups}
-                            value={formValues.groupSelection.map((value) =>
-                              groups.find((group) => group.value === value)
-                            )}
-                            className="placeholder-[#888]"
-                            onChange={handleGroupChange}
-                            placeholder={
-                              isGroupLoading
-                                ? "Loading groups..."
-                                : "Search and select groups"
-                            }
-                            classNamePrefix="select"
-                            styles={customStyles}
-                            isOptionDisabled={(option) => option.isDisabled}
-                            isLoading={loading} // Show loading indicator
-                          />
-                          {errors.groupSelection && (
+                          {errors.tradeTitle && (
                             <span className={styles.error}>
-                              {errors.groupSelection}
+                              {errors.tradeTitle}
                             </span>
                           )}
                         </div>
-                      </div>
 
-                      {/* Distribution Checkboxes */}
-                      <div className={styles.field9}>
-                        <label>Distribution*</label>
-                        <div className={styles.checkBoxBtn + " flex-wrap"}>
-                          {/* Email Checkbox */}
-                          <div className={styles.checkBoxEmail}>
+                        {/* Entry Section */}
+                        <div className="entrySection flex flex-col sm:flex-row md:flex-row lg:flex-row gap-4 mb-5 mt-4">
+                          {/* Ticker Symbol */}
+                          <div className="field2 w-full sm:w-1/3">
+                            <label className="block  font-semibold">
+                              Ticker Symbol
+                            </label>
                             <input
-                              type="checkbox"
-                              id="email"
-                              checked={formValues.distribution.includes(
-                                "email"
-                              )}
-                              onChange={handleCheckboxChange}
+                              type="text"
+                              id="tickerSymbol"
+                              placeholder="TYP"
+                              className="w-full p-2 border border-gray-300 rounded"
+                              value={formValues.tickerSymbol}
+                              onChange={handleInputChange}
                             />
-                            <label htmlFor="email">Email</label>
                           </div>
 
-                          {/* SMS Checkbox */}
-                          <div className={styles.checkBoxSMS}>
+                          {/* Entry Price */}
+                          <div className="field3 w-full sm:w-1/3">
+                            <label className="block  font-semibold">
+                              Entry Price
+                            </label>
                             <input
-                              type="checkbox"
-                              id="sms"
-                              checked={formValues.distribution.includes("sms")}
-                              onChange={handleCheckboxChange}
+                              type="number"
+                              id="entryPrice"
+                              placeholder="$ 0.00"
+                              className="w-full p-2 border border-gray-300 rounded"
+                              value={formValues.entryPrice}
+                              onChange={handleInputChange}
                             />
-                            <label htmlFor="sms">SMS</label>
                           </div>
 
-                          {/* WordPress Checkbox */}
-                          <div className={styles.checkBoxWordPress}>
+                          {/* Exit Price */}
+                          <div className="field4 w-full sm:w-1/3">
+                            <label className="block  font-semibold">
+                              Exit Price
+                            </label>
                             <input
-                              type="checkbox"
-                              id="word_press"
-                              checked={formValues.distribution.includes(
-                                "word_press"
-                              )}
-                              onChange={handleCheckboxChange}
+                              id="exitPrice"
+                              type="number"
+                              placeholder="$ 0.00"
+                              className="w-full p-2 border border-gray-300 rounded"
+                              value={formValues.exitPrice}
+                              onChange={handleInputChange}
                             />
-                            <label htmlFor="word_press">WordPress</label>
                           </div>
                         </div>
 
-                        {/* Display Error */}
-                        {errors.distribution && (
-                          <span className={styles.error}>
-                            {errors.distribution}
-                          </span>
-                        )}
-                      </div>
+                        {/* Trade Description */}
+                        <div className={styles.field5}>
+                          <label style={{ marginBottom: "20px" }}>
+                            Trade Description{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <Home
+                            onChange={(value) => handleInputChange(value)}
+                            value={formValues.tradeDescription}
+                          />
+                        </div>
 
-                      {/* Buttons */}
-                      <div className={styles.button}>
-                        <button type="submit" className={styles.submitBtn}>
-                          {loading ? <Loading position="top" /> : "Submit"}
-                        </button>
+                        {/* Email Subject */}
+                        <div className={styles.field6}>
+                          <label>
+                            Email Subject{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            id="emailSubject"
+                            type="text"
+                            placeholder="Write an email subject"
+                            value={formValues.emailSubject}
+                            onChange={handleInputChange}
+                          />
+                          {errors.emailSubject && (
+                            <span className={styles.error}>
+                              {errors.emailSubject}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Segmentation Criteria */}
+                        <div className={styles.field7}>
+                          <label htmlFor="segmentation">
+                            Segmentation Criteria{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <CustomSelect
+                            id="segmentation"
+                            options={[
+                              { value: "keap", label: "Keap" },
+                              {
+                                value: "go_high_level",
+                                label: "Go High Level",
+                              },
+                            ]}
+                            value={formValues.segmentation}
+                            onChange={(newValue) =>
+                              handleInputChange({
+                                id: "segmentation",
+                                value: newValue,
+                              })
+                            }
+                            placeholder="Select segmentation criteria"
+                          />
+                          {errors.segmentation && (
+                            <span className={styles.error}>
+                              {errors.segmentation}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Group Selection */}
+                        <div className={styles.field8}>
+                          <label>
+                            Group Selection{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className={styles.selectWrapper}>
+                            <Select
+                              key={groups.length}
+                              isMulti
+                              name="groups"
+                              options={groups}
+                              value={formValues.groupSelection.map((value) =>
+                                groups.find((group) => group.value === value)
+                              )}
+                              className="placeholder-[#888]"
+                              onChange={handleGroupChange}
+                              placeholder={
+                                isGroupLoading
+                                  ? "Loading groups..."
+                                  : "Search and select groups"
+                              }
+                              classNamePrefix="select"
+                              styles={customStyles}
+                              isOptionDisabled={(option) => option.isDisabled}
+                              isLoading={loading} // Show loading indicator
+                            />
+                            {errors.groupSelection && (
+                              <span className={styles.error}>
+                                {errors.groupSelection}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Distribution Checkboxes */}
+                        <div className={styles.field9}>
+                          <label>
+                            Distribution <span className="text-red-500">*</span>
+                          </label>
+                          <div className={styles.checkBoxBtn + " flex-wrap"}>
+                            {/* Email Checkbox */}
+                            <div className={styles.checkBoxEmail}>
+                              <input
+                                type="checkbox"
+                                id="email"
+                                checked={formValues.distribution.includes(
+                                  "email"
+                                )}
+                                onChange={handleCheckboxChange}
+                              />
+                              <label htmlFor="email">Email</label>
+                            </div>
+
+                            {/* SMS Checkbox */}
+                            <div className={styles.checkBoxSMS}>
+                              <input
+                                type="checkbox"
+                                id="sms"
+                                checked={formValues.distribution.includes(
+                                  "sms"
+                                )}
+                                onChange={handleCheckboxChange}
+                              />
+                              <label htmlFor="sms">SMS</label>
+                            </div>
+
+                            {/* WordPress Checkbox */}
+                            <div className={styles.checkBoxWordPress}>
+                              <input
+                                type="checkbox"
+                                id="word_press"
+                                checked={formValues.distribution.includes(
+                                  "word_press"
+                                )}
+                                onChange={handleCheckboxChange}
+                              />
+                              <label htmlFor="word_press">WordPress</label>
+                            </div>
+                          </div>
+
+                          {/* Display Error */}
+                          {errors.distribution && (
+                            <span className={styles.error}>
+                              {errors.distribution}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Buttons */}
+                        <div className={styles.button}>
+                          <button type="submit" className={styles.submitBtn}>
+                            {loading ? <Loading position="top" /> : "Submit"}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </form>
+                  </form>
 
-                {/* Popup */}
-                {isPopupActive.show && (
-                  <Popup
-                    message={isPopupActive.message}
-                    type={isPopupActive.type}
-                    onClose={() =>
-                      setIsPopupActive({ ...isPopupActive, show: false })
-                    }
-                  />
-                )}
+                  {/* Popup */}
+                  {isPopupActive.show && (
+                    <Popup
+                      message={isPopupActive.message}
+                      type={isPopupActive.type}
+                      onClose={() =>
+                        setIsPopupActive({ ...isPopupActive, show: false })
+                      }
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </ProtectedPage>
   );
 }

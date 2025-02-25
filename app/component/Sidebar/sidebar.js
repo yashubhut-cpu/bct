@@ -42,7 +42,8 @@ export default function Sidebar({
 }) {
   const pathname = usePathname();
   const [userName, setUserName] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // State to manage dropdown visibility
+  const [userRole, setUserRole] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = () => {
@@ -53,8 +54,9 @@ export default function Sidebar({
       }
       try {
         const decodedToken = jwtDecode(accessToken);
-        const { first_name, last_name } = decodedToken;
+        const { first_name, last_name, role } = decodedToken;
         setUserName(`${first_name} ${last_name}`);
+        setUserRole(role);
       } catch (error) {
         console.error("Failed to decode token:", error);
       }
@@ -71,6 +73,14 @@ export default function Sidebar({
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
+
+  // Filter menu items based on role
+  const visibleMenuItems =
+    userRole === "admin"
+      ? menuItems
+      : userRole === "editor"
+      ? menuItems.slice(0, 4)
+      : [];
 
   return (
     <div
@@ -121,7 +131,7 @@ export default function Sidebar({
       <hr className={styles.divider} />
 
       <ul className={styles.sideBarTitle + ""}>
-        {menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
           <li className={styles.border_active} key={item.name}>
             <Link href={item.href}>
               <div

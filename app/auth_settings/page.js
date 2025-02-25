@@ -9,7 +9,7 @@ import Sidebar from "../component/Sidebar/sidebar";
 import { useRouter } from "next/navigation";
 import Header from "../component/Header/header";
 import { get } from "../api/base";
-
+import ProtectedPage from "../ProtectedPage";
 export default function AuthSettings() {
   const [keepClientId, setKeepClientId] = useState("");
   const [keepClientSecret, setKeepClientSecret] = useState("");
@@ -89,127 +89,129 @@ export default function AuthSettings() {
     setIsMobileSidebarActive(!isMobileSidebarActive);
 
   return (
-    <div className={styles.dashboardContainer}>
-      <Sidebar
-        isCollapsed={isSidebarActive}
-        toggleSidebar={toggleSidebar}
-        isMobileActive={isMobileSidebarActive}
-        closeSidebar={toggleMobileSidebar}
-      />
-      {/* Conditionally applying the class for main content */}
-      <Header toggleSidebar={toggleMobileSidebar} />
-      <div
-        className={`${
-          isSidebarActive ? styles.mainContent : styles.sidebarActive
-        }`}
-      >
-        <div className={styles.pageContent}>
-          <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
-            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
-              Authentication Settings
-            </h2>
-          </div>
-          <div className={styles.container + " mx-2 mb-3"}>
-            <div className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <img
-                  src="./images/Keap-logo.svg"
-                  alt="Keap"
-                  className={styles.logo}
-                />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label>Keap Client Id*</label>
-                <div className={styles.inputWrapper}>
-                  <input
-                    type="text"
-                    value={keepClientId}
-                    onChange={(e) => setKeepClientId(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label>Keap Client Secret*</label>
-                <div className={styles.inputWrapper}>
-                  <input
-                    type={isKeapSecretVisible ? "text" : "password"}
-                    value={keepClientSecret}
-                    onChange={(e) => setKeepClientSecret(e.target.value)}
-                  />
-                  <button
-                    className={styles.copyButton}
-                    onClick={toggleKeapSecretVisibility}
-                  >
-                    <img
-                      src="./images/key_icon.svg"
-                      alt="Toggle Keap Secret Visibility"
-                    />
-                  </button>
-                </div>
-              </div>
-
-              <div className={styles.buttonGroup}>
-                <button className={styles.saveButton}>Save</button>
-                <button className={styles.testButton}>
-                  <span className={styles.testIcon}>⚡</span>
-                  Test Connection
-                </button>
-              </div>
+    <ProtectedPage>
+      <div className={styles.dashboardContainer}>
+        <Sidebar
+          isCollapsed={isSidebarActive}
+          toggleSidebar={toggleSidebar}
+          isMobileActive={isMobileSidebarActive}
+          closeSidebar={toggleMobileSidebar}
+        />
+        {/* Conditionally applying the class for main content */}
+        <Header toggleSidebar={toggleMobileSidebar} />
+        <div
+          className={`${
+            isSidebarActive ? styles.mainContent : styles.sidebarActive
+          }`}
+        >
+          <div className={styles.pageContent}>
+            <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
+              <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
+                Authentication Settings
+              </h2>
             </div>
-
-            <div className={styles.section2}>
-              <div className={styles.sectionHeader}>
-                <img
-                  src="./images/highleval.svg"
-                  alt="HighLevel"
-                  className={styles.logo}
-                />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label>GoHighLevel Client ID*</label>
-                <div className={styles.inputWrapper}>
-                  <input
-                    type="text"
-                    value={highLevelClientId}
-                    onChange={(e) => setHighLevelClientId(e.target.value)}
+            <div className={styles.container + " mx-2 mb-3"}>
+              <div className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <img
+                    src="./images/Keap-logo.svg"
+                    alt="Keap"
+                    className={styles.logo}
                   />
                 </div>
-              </div>
 
-              <div className={styles.inputGroup}>
-                <label>GoHighLevel Client Secret*</label>
-                <div className={styles.inputWrapper}>
-                  <input
-                    type={isHighLevelSecretVisible ? "text" : "password"}
-                    value={highLevelClientSecret}
-                    onChange={(e) => setHighLevelClientSecret(e.target.value)}
-                  />
-                  <button
-                    className={styles.copyButton}
-                    onClick={toggleHighLevelSecretVisibility}
-                  >
-                    <img
-                      src="./images/key_icon.svg"
-                      alt="Toggle HighLevel Secret Visibility"
+                <div className={styles.inputGroup}>
+                  <label>Keap Client Id*</label>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type="text"
+                      value={keepClientId}
+                      onChange={(e) => setKeepClientId(e.target.value)}
                     />
+                  </div>
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label>Keap Client Secret*</label>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type={isKeapSecretVisible ? "text" : "password"}
+                      value={keepClientSecret}
+                      onChange={(e) => setKeepClientSecret(e.target.value)}
+                    />
+                    <button
+                      className={styles.copyButton}
+                      onClick={toggleKeapSecretVisibility}
+                    >
+                      <img
+                        src="./images/key_icon.svg"
+                        alt="Toggle Keap Secret Visibility"
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.buttonGroup}>
+                  <button className={styles.saveButton}>Save</button>
+                  <button className={styles.testButton}>
+                    <span className={styles.testIcon}>⚡</span>
+                    Test Connection
                   </button>
                 </div>
               </div>
 
-              <div className={styles.buttonGroup}>
-                <button className={styles.saveButton}>Save</button>
-                <button className={styles.testButton}>
-                  <span className={styles.testIcon}>⚡</span>
-                  Test Connection
-                </button>
+              <div className={styles.section2}>
+                <div className={styles.sectionHeader}>
+                  <img
+                    src="./images/highleval.svg"
+                    alt="HighLevel"
+                    className={styles.logo}
+                  />
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label>GoHighLevel Client ID*</label>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type="text"
+                      value={highLevelClientId}
+                      onChange={(e) => setHighLevelClientId(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label>GoHighLevel Client Secret*</label>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type={isHighLevelSecretVisible ? "text" : "password"}
+                      value={highLevelClientSecret}
+                      onChange={(e) => setHighLevelClientSecret(e.target.value)}
+                    />
+                    <button
+                      className={styles.copyButton}
+                      onClick={toggleHighLevelSecretVisibility}
+                    >
+                      <img
+                        src="./images/key_icon.svg"
+                        alt="Toggle HighLevel Secret Visibility"
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.buttonGroup}>
+                  <button className={styles.saveButton}>Save</button>
+                  <button className={styles.testButton}>
+                    <span className={styles.testIcon}>⚡</span>
+                    Test Connection
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </ProtectedPage>
   );
 }

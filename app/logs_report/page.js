@@ -18,7 +18,7 @@ import "@fontsource/be-vietnam-pro";
 import "@fontsource/be-vietnam-pro/400.css";
 import "@fontsource/be-vietnam-pro/400-italic.css";
 import "react-datepicker/dist/react-datepicker.css";
-
+import ProtectedPage from "../ProtectedPage";
 export default function Logreport() {
   const [isSidebarActive, setIsSidebarActive] = useState(false);
   const [isMobileSidebarActive, setIsMobileSidebarActive] = useState(true);
@@ -412,255 +412,263 @@ export default function Logreport() {
   };
 
   return (
-    <div className={styles.dashboardContainer}>
-      <Sidebar
-        isCollapsed={isSidebarActive}
-        toggleSidebar={toggleSidebar}
-        isMobileActive={isMobileSidebarActive}
-        closeSidebar={toggleMobileSidebar}
-      />
+    <ProtectedPage>
+      <div className={styles.dashboardContainer}>
+        <Sidebar
+          isCollapsed={isSidebarActive}
+          toggleSidebar={toggleSidebar}
+          isMobileActive={isMobileSidebarActive}
+          closeSidebar={toggleMobileSidebar}
+        />
 
-      <Header toggleSidebar={toggleMobileSidebar} />
-      <div
-        className={`${
-          isSidebarActive ? styles.mainContent : styles.sidebarActive
-        }`}
-      >
-        <div className={styles.pageContent}>
-          <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
-            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
-              Logs & Reports
-            </h2>
+        <Header toggleSidebar={toggleMobileSidebar} />
+        <div
+          className={`${
+            isSidebarActive ? styles.mainContent : styles.sidebarActive
+          }`}
+        >
+          <div className={styles.pageContent}>
+            <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
+              <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
+                Logs & Reports
+              </h2>
 
-            <div className="relative inline-block text-left" ref={dropdownRef}>
-              {/* Button to toggle dropdown */}
-              <button
-                type="button"
-                className={
-                  styles.pageButton +
-                  " inline-flex w-full justify-center gap-x-1.5 rounded-md bg-[#5177FF ] px-5 py-2 text-sm text-white shadow-sm"
-                }
-                onClick={() => setIsOpen((prev) => !prev)}
-                aria-expanded={isOpen}
-                aria-haspopup="true"
+              <div
+                className="relative inline-block text-left"
+                ref={dropdownRef}
               >
-                <img
-                  src="/images/export_icon.svg"
-                  alt="Export"
-                  className="w-4 h-4 me-1"
-                />
-                Export Data
-              </button>
-
-              {/* Export Menu */}
-              {isOpen && (
-                <div
-                  className="absolute z-50 right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5"
-                  role="menu"
-                  aria-orientation="vertical"
-                >
-                  <div className="py-1">
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-200"
-                      role="menuitem"
-                      onClick={handleDownloadPDF}
-                    >
-                      Download PDF
-                    </button>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-200"
-                      role="menuitem"
-                      onClick={handleDownloadExcel}
-                    >
-                      Download Excel
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Table Content */}
-        <div className="mx-2 mb-4">
-          <div className="bg-[#1C2546] py-4 rounded-[20px] shadow">
-            {/* Header Section */}
-            <form
-              onSubmit={handleFiltered}
-              className="flex flex-wrap items-center space-y-4 md:space-y-0 md:space-x-4 p-4 rounded-lg"
-            >
-              {/* Date Pickers */}
-              <div className="flex flex-wrap">
-                <div className="relative my-2">
-                  <DatePicker
-                    selected={formValue.startDate}
-                    onChange={(date) =>
-                      setFormValue({ ...formValue, startDate: date })
-                    }
-                    placeholderText="dd/mm/yyyy"
-                    className="w-full px-4 py-2 z-100 text-sm bg-[#00000000] text-white border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    dateFormat="dd/MM/yyyy"
-                  />
-                  <span className="absolute top-1/2 right-3 transform -translate-y-1/2">
-                    <img
-                      src="/images/calendar_icon.svg"
-                      alt="Calendar Icon"
-                      className="w-4 h-4"
-                    />
-                  </span>
-                </div>
-
-                <div className="relative my-2 ml-0 sm:ml-4">
-                  <DatePicker
-                    selected={formValue.endDate}
-                    onChange={(date) =>
-                      setFormValue({ ...formValue, endDate: date })
-                    }
-                    placeholderText="dd/mm/yyyy"
-                    className="w-full px-4 py-2 text-sm bg-[#00000000] text-white border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    dateFormat="dd/MM/yyyy"
-                  />
-                  <span className="absolute top-1/2 right-3 transform -translate-y-1/2">
-                    <img
-                      src="/images/calendar_icon.svg"
-                      alt="Calendar Icon"
-                      className="w-4 h-4"
-                    />
-                  </span>
-                </div>
-              </div>
-
-              {/* Dropdowns */}
-              <div className="flex flex-wrap gap-4 md:z-30">
-                {/* Distribution Channel */}
-                <CustomMultiSelect
-                  options={[
-                    { label: "SMS", value: "sms" },
-                    { label: "Email", value: "email" },
-                    { label: "WordPress", value: "word_press" },
-                  ]}
-                  onChange={(selectedValues) =>
-                    setFormValue({
-                      ...formValue,
-                      distributionChannel: selectedValues,
-                    })
-                  }
-                  value={formValue.distributionChannel}
-                  placeholder="Distribution Channel"
-                  selectedValues={formValue.distributionChannel}
-                  isMulti
-                />
-
-                {/* Segmentation Criteria */}
-                <CustomMultiSelect
-                  options={[
-                    { label: "Keap", value: "keap" },
-                    { label: "Go High Level", value: "go_high_level" },
-                  ]}
-                  value={formValue.segmentation}
-                  placeholder="Segmentation Criteria"
-                  onChange={(selectedValues) =>
-                    setFormValue({ ...formValue, segmentation: selectedValues })
-                  }
-                  selectedValues={formValue.segmentation}
-                />
-
-                {/* Group */}
-                <CustomMultiSelect
-                  options={groups}
-                  placeholder="Select Groups"
-                  value={formValue.group}
-                  onChange={(selectedValues) =>
-                    setFormValue({ ...formValue, group: selectedValues })
-                  }
-                  isMulti
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-4">
-                {/* search btn */}
-                <button className="flex items-center justify-center w-10 h-10 bg-[#5177FF] text-white rounded-lg focus:ring-2 focus:ring-blue-500">
-                  <Search className="w-5 h-5" />
-                </button>
-
-                {/* refresh btn */}
+                {/* Button to toggle dropdown */}
                 <button
-                  className="flex items-center justify-center w-10 h-10 bg-[#00000000] text-gray-400 border border-gray-500 rounded-lg focus:ring-2 focus:ring-gray-500"
-                  onClick={() => {
-                    setFormValue({
-                      startDate: "",
-                      endDate: "",
-                      distributionChannel: [],
-                      segmentation: "",
-                      group: [],
-                    });
-                    fetchAlerts();
-                  }}
+                  type="button"
+                  className={
+                    styles.pageButton +
+                    " inline-flex w-full justify-center gap-x-1.5 rounded-md bg-[#5177FF ] px-5 py-2 text-sm text-white shadow-sm"
+                  }
+                  onClick={() => setIsOpen((prev) => !prev)}
+                  aria-expanded={isOpen}
+                  aria-haspopup="true"
                 >
                   <img
-                    src="/images/clear_logo.svg"
-                    alt="Clear Logo"
-                    className="w-5 h-5"
+                    src="/images/export_icon.svg"
+                    alt="Export"
+                    className="w-4 h-4 me-1"
                   />
+                  Export Data
                 </button>
-              </div>
-            </form>
 
-            {/* Table Section */}
-            <div className={styles.tableSection}>
-              <div
-                className={styles.tableContainer + " scrollbar"}
-                id="style-2"
-              >
-                <div
-                  className={styles.tableContent + " force-overflow p-4 pt-0"}
-                >
-                  <Table
-                    alerts={tradeAlerts}
-                    visibleColumns={columnsConfig.logreport}
-                    loading={loading}
-                    onEyeIconClick={handleEyeClick}
-                    onRowChange={handleRowChange}
-                    onSelectAll={handleSelectAll}
-                    isAllSelected={isAllSelected}
-                    selectedRows={selectedRows}
-                  />
-                </div>
+                {/* Export Menu */}
+                {isOpen && (
+                  <div
+                    className="absolute z-50 right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5"
+                    role="menu"
+                    aria-orientation="vertical"
+                  >
+                    <div className="py-1">
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-200"
+                        role="menuitem"
+                        onClick={handleDownloadPDF}
+                      >
+                        Download PDF
+                      </button>
+                      <button
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-200"
+                        role="menuitem"
+                        onClick={handleDownloadExcel}
+                      >
+                        Download Excel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+          </div>
 
-            {/* Pagination Section */}
-            <div className={styles.pagination + " p-4"}>
-              <button
-                className={styles.paginationButton}
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
+          {/* Table Content */}
+          <div className="mx-2 mb-4">
+            <div className="bg-[#1C2546] py-4 rounded-[20px] shadow">
+              {/* Header Section */}
+              <form
+                onSubmit={handleFiltered}
+                className="flex flex-wrap items-center space-y-4 md:space-y-0 md:space-x-4 p-4 rounded-lg"
               >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              {Array.from({ length: totalPages }, (_, index) => (
-                <button
-                  key={index}
-                  className={`${styles.paginationButton} ${
-                    page === index + 1 ? styles.active : ""
-                  }`}
-                  onClick={() => handlePageChange(index + 1)}
+                {/* Date Pickers */}
+                <div className="flex flex-wrap">
+                  <div className="relative my-2">
+                    <DatePicker
+                      selected={formValue.startDate}
+                      onChange={(date) =>
+                        setFormValue({ ...formValue, startDate: date })
+                      }
+                      placeholderText="dd/mm/yyyy"
+                      className="w-full px-4 py-2 z-100 text-sm bg-[#00000000] text-white border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      dateFormat="dd/MM/yyyy"
+                    />
+                    <span className="absolute top-1/2 right-3 transform -translate-y-1/2">
+                      <img
+                        src="/images/calendar_icon.svg"
+                        alt="Calendar Icon"
+                        className="w-4 h-4"
+                      />
+                    </span>
+                  </div>
+
+                  <div className="relative my-2 ml-0 sm:ml-4">
+                    <DatePicker
+                      selected={formValue.endDate}
+                      onChange={(date) =>
+                        setFormValue({ ...formValue, endDate: date })
+                      }
+                      placeholderText="dd/mm/yyyy"
+                      className="w-full px-4 py-2 text-sm bg-[#00000000] text-white border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      dateFormat="dd/MM/yyyy"
+                    />
+                    <span className="absolute top-1/2 right-3 transform -translate-y-1/2">
+                      <img
+                        src="/images/calendar_icon.svg"
+                        alt="Calendar Icon"
+                        className="w-4 h-4"
+                      />
+                    </span>
+                  </div>
+                </div>
+
+                {/* Dropdowns */}
+                <div className="flex flex-wrap gap-4 md:z-30">
+                  {/* Distribution Channel */}
+                  <CustomMultiSelect
+                    options={[
+                      { label: "SMS", value: "sms" },
+                      { label: "Email", value: "email" },
+                      { label: "WordPress", value: "word_press" },
+                    ]}
+                    onChange={(selectedValues) =>
+                      setFormValue({
+                        ...formValue,
+                        distributionChannel: selectedValues,
+                      })
+                    }
+                    value={formValue.distributionChannel}
+                    placeholder="Distribution Channel"
+                    selectedValues={formValue.distributionChannel}
+                    isMulti
+                  />
+
+                  {/* Segmentation Criteria */}
+                  <CustomMultiSelect
+                    options={[
+                      { label: "Keap", value: "keap" },
+                      { label: "Go High Level", value: "go_high_level" },
+                    ]}
+                    value={formValue.segmentation}
+                    placeholder="Segmentation Criteria"
+                    onChange={(selectedValues) =>
+                      setFormValue({
+                        ...formValue,
+                        segmentation: selectedValues,
+                      })
+                    }
+                    selectedValues={formValue.segmentation}
+                  />
+
+                  {/* Group */}
+                  <CustomMultiSelect
+                    options={groups}
+                    placeholder="Select Groups"
+                    value={formValue.group}
+                    onChange={(selectedValues) =>
+                      setFormValue({ ...formValue, group: selectedValues })
+                    }
+                    isMulti
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-4">
+                  {/* search btn */}
+                  <button className="flex items-center justify-center w-10 h-10 bg-[#5177FF] text-white rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <Search className="w-5 h-5" />
+                  </button>
+
+                  {/* refresh btn */}
+                  <button
+                    className="flex items-center justify-center w-10 h-10 bg-[#00000000] text-gray-400 border border-gray-500 rounded-lg focus:ring-2 focus:ring-gray-500"
+                    onClick={() => {
+                      setFormValue({
+                        startDate: "",
+                        endDate: "",
+                        distributionChannel: [],
+                        segmentation: "",
+                        group: [],
+                      });
+                      fetchAlerts();
+                    }}
+                  >
+                    <img
+                      src="/images/clear_logo.svg"
+                      alt="Clear Logo"
+                      className="w-5 h-5"
+                    />
+                  </button>
+                </div>
+              </form>
+
+              {/* Table Section */}
+              <div className={styles.tableSection}>
+                <div
+                  className={styles.tableContainer + " scrollbar"}
+                  id="style-2"
                 >
-                  {index + 1}
+                  <div
+                    className={styles.tableContent + " force-overflow p-4 pt-0"}
+                  >
+                    <Table
+                      alerts={tradeAlerts}
+                      visibleColumns={columnsConfig.logreport}
+                      loading={loading}
+                      onEyeIconClick={handleEyeClick}
+                      onRowChange={handleRowChange}
+                      onSelectAll={handleSelectAll}
+                      isAllSelected={isAllSelected}
+                      selectedRows={selectedRows}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Pagination Section */}
+              <div className={styles.pagination + " p-4"}>
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-              ))}
-              <button
-                className={styles.paginationButton}
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <button
+                    key={index}
+                    className={`${styles.paginationButton} ${
+                      page === index + 1 ? styles.active : ""
+                    }`}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+                <button
+                  className={styles.paginationButton}
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </ProtectedPage>
   );
 }

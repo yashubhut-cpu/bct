@@ -1,14 +1,32 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ApexCharts from "apexcharts";
 import styles from "./chart.module.css";
+import { get } from "../../api/base";
 
 const MyWeeklyChartComponent = ({ selectedWeek, data }) => {
+  const [chartData, setChartData] = useState(null);
+
   useEffect(() => {
-    if (data && typeof window !== "undefined") {
-      const categories = data.map((item) => item.day);
-      const smsData = data.map((item) => item.sms);
-      const emailData = data.map((item) => item.email);
-      const wordPressData = data.map((item) => item.word_press);
+    const fetchData = async () => {
+      try {
+        const response = await get(
+          `/dashboard/weekday_alerts/${selectedWeek}/`
+        );
+        setChartData(response.data);
+      } catch (error) {
+        console.error("Error fetching weekly alert data:", error);
+      }
+    };
+
+    fetchData();
+  }, [selectedWeek]);
+
+  useEffect(() => {
+    if (chartData && typeof window !== "undefined") {
+      const categories = chartData.map((item) => item.day);
+      const smsData = chartData.map((item) => item.sms);
+      const emailData = chartData.map((item) => item.email);
+      const wordPressData = chartData.map((item) => item.word_press);
 
       const options = {
         series: [
@@ -65,12 +83,6 @@ const MyWeeklyChartComponent = ({ selectedWeek, data }) => {
         },
       };
 
-      // Destroy existing chart if any
-      const existingChart = document.querySelector("#weekly_alert");
-      if (existingChart) {
-        existingChart.innerHTML = "";
-      }
-
       const chart = new ApexCharts(
         document.querySelector("#weekly_alert"),
         options
@@ -83,7 +95,7 @@ const MyWeeklyChartComponent = ({ selectedWeek, data }) => {
         }
       };
     }
-  }, [data]); // Only depend on data prop
+  }, [chartData]);
 
   return <div className={styles.chart} id="weekly_alert"></div>;
 };

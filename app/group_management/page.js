@@ -17,6 +17,24 @@ import ConfirmationDialog from "../component/ConfirmationDialog";
 import Popup from "../component/Popup";
 import CustomSelect from "../component/CustomSelect";
 import Loading from "../component/loading";
+import ProtectedPage from "../ProtectedPage";
+// Function to decode JWT token
+const decodeToken = (token) => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return null;
+  }
+};
 
 export default function Groupmanagement() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -33,6 +51,7 @@ export default function Groupmanagement() {
   const [editorsList, setEditorsList] = useState([]);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState(null);
+  const [userRole, setUserRole] = useState("");
 
   const [popup, setPopup] = useState({
     show: false,
@@ -81,7 +100,17 @@ export default function Groupmanagement() {
 
   useEffect(() => {
     document.title = "Group Management";
-    if (localStorage.getItem("accessToken")) {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      const decoded = decodeToken(token);
+      console.log("Decoded Token:", decoded);
+      if (decoded && decoded.role) {
+        setUserRole(decoded.role.toLowerCase());
+        console.log("User Role Set:", decoded.role.toLowerCase());
+      } else {
+        setUserRole("admin");
+        console.log("Fallback to admin role");
+      }
       router.push("/group_management");
     } else {
       router.push("/");
@@ -90,7 +119,6 @@ export default function Groupmanagement() {
 
   const fetchTags = async (value) => {
     let apiUrl = "";
-
     if (value === "keap") {
       apiUrl = "/api_client/keap_tags/";
     } else if (value === "go_high_level") {
@@ -102,11 +130,8 @@ export default function Groupmanagement() {
 
     try {
       const response = await get(apiUrl);
-      console.log("response ::", response);
-
       if (response.status === 200) {
         let data = response.data.tags || [];
-
         if (value === "keap") {
           data = data.map((tag) => ({
             ...tag,
@@ -115,8 +140,6 @@ export default function Groupmanagement() {
               : tag.tag_name,
           }));
         }
-
-        console.log("Updated Tags Data ::", data);
         setTags(data);
       } else {
         throw new Error("Failed to fetch tags");
@@ -166,14 +189,10 @@ export default function Groupmanagement() {
 
   const handleTagsChange = (select) => {
     const tagAssigned = select || [];
-
-    console.log("tagAssigned", tagAssigned);
-
     setFormValues({
       ...formValues,
       tagAssigned,
     });
-
     setErrors({
       ...errors,
       tagAssigned:
@@ -183,12 +202,10 @@ export default function Groupmanagement() {
 
   const handleEditorChange = (select) => {
     const assignedEditors = select || [];
-
     setFormValues({
       ...formValues,
       assignedEditors,
     });
-
     setErrors({
       ...errors,
       assignedEditors:
@@ -267,7 +284,7 @@ export default function Groupmanagement() {
       ...provided,
       backgroundColor: "#1C2546",
       color: "#fff",
-      border: "1px solid #A3AED0",
+      border: "1px solid #A3Aed0",
       borderRadius: "8px",
     }),
     control: (provided) => ({
@@ -296,7 +313,6 @@ export default function Groupmanagement() {
 
   const handleInputChange = async (e) => {
     const { id, value } = e.target;
-
     setFormValues((prevFormValues) => ({
       ...prevFormValues,
       [id]: value,
@@ -465,7 +481,7 @@ export default function Groupmanagement() {
   };
 
   const handleEditClick = (id, rowData) => {
-    console.log("rowdata", rowData);
+    console.log("Edit Clicked - Role:", userRole);
     setEditingGroup(rowData);
     setFormValues({
       groupName: rowData.group_name,
@@ -484,245 +500,253 @@ export default function Groupmanagement() {
     setIsPanelOpen(true);
   };
 
-  return (
-    <div className={styles.dashboardContainer}>
-      <Sidebar
-        isCollapsed={isSidebarActive}
-        toggleSidebar={toggleSidebar}
-        isMobileActive={isMobileSidebarActive}
-        closeSidebar={toggleMobileSidebar}
-      />
-      <Header toggleSidebar={toggleMobileSidebar} />
-      <div
-        className={`${
-          isSidebarActive ? styles.mainContent : styles.sidebarActive
-        }`}
-      >
-        <div className={styles.pageContent}>
-          <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
-            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
-              Group Management
-            </h2>
-            <button className={styles.pageButton} onClick={() => togglePanel()}>
-              <img src="/images/addnewgroup.svg" alt="Add Group Icon" />
-              Add New Group
-            </button>
-          </div>
+  const handleEyeClick = (id) => {
+    console.log("Eye Clicked - Role:", userRole);
+    const rowData = groupData.find((group) => group.id === id);
+    togglePanel(rowData);
+  };
 
-          <div className="mx-2 mb-4">
-            <div className="bg-[#1C2546] rounded-[20px] shadow relative">
-              <div className={styles.tableSection}>
-                <div
-                  className={styles.tableContainer + " scrollbar"}
-                  id="style-2"
+  return (
+    <ProtectedPage>
+      <div className={styles.dashboardContainer}>
+        <Sidebar
+          isCollapsed={isSidebarActive}
+          toggleSidebar={toggleSidebar}
+          isMobileActive={isMobileSidebarActive}
+          closeSidebar={toggleMobileSidebar}
+        />
+        <Header toggleSidebar={toggleMobileSidebar} />
+        <div
+          className={`${
+            isSidebarActive ? styles.mainContent : styles.sidebarActive
+          }`}
+        >
+          <div className={styles.pageContent}>
+            <div className="flex justify-between items-center title-space mr-4 ml-4 mb-3">
+              <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-2.25xl text-white mt-4 mb-3 sm:w-auto">
+                Group Management
+              </h2>
+              {userRole === "admin" && (
+                <button
+                  className={styles.pageButton}
+                  onClick={() => togglePanel()}
                 >
+                  <img src="/images/addnewgroup.svg" alt="Add Group Icon" />
+                  Add New Group
+                </button>
+              )}
+            </div>
+
+            <div className="mx-2 mb-4">
+              <div className="bg-[#1C2546] rounded-[20px] shadow relative">
+                <div className={styles.tableSection}>
                   <div
-                    className={styles.tableContent + " force-overflow p-4 pt-0"}
+                    className={styles.tableContainer + " scrollbar"}
+                    id="style-2"
                   >
-                    <Table
-                      alerts={groupData}
-                      visibleColumns={columnsConfig.groupmanagement}
-                      onEditClick={handleEditClick}
-                      onDeleteClick={handleDeleteClick}
-                      loading={loading}
-                    />
+                    <div
+                      className={
+                        styles.tableContent + " force-overflow p-4 pt-0"
+                      }
+                    >
+                      <Table
+                        alerts={groupData}
+                        visibleColumns={columnsConfig.groupmanagement(userRole)}
+                        onEditClick={handleEditClick}
+                        onDeleteClick={handleDeleteClick}
+                        onEyeIconClick={handleEyeClick}
+                        loading={loading}
+                        role={userRole}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className={styles.pagination + " p-4"}>
-                <button
-                  className={styles.paginationButton}
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={page === 1}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                {Array.from({ length: totalPages }, (_, index) => (
+                <div className={styles.pagination + " p-4"}>
                   <button
-                    key={index}
-                    className={`${styles.paginationButton} ${
-                      page === index + 1 ? styles.active : ""
-                    }`}
-                    onClick={() => handlePageChange(index + 1)}
+                    className={styles.paginationButton}
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
                   >
-                    {index + 1}
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
-                ))}
-                <button
-                  className={styles.paginationButton}
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={page === totalPages}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <button
+                      key={index}
+                      className={`${styles.paginationButton} ${
+                        page === index + 1 ? styles.active : ""
+                      }`}
+                      onClick={() => handlePageChange(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                  <button
+                    className={styles.paginationButton}
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <SlidingPanel
-          isOpen={isPanelOpen}
-          onClose={() => setIsPanelOpen(false)}
-          width="w-[700px]"
-          style={{
-            height: "685px",
-            top: "0px",
-            left: "998px",
-            gap: "20px",
-            opacity: isPanelOpen ? 1 : 0,
-            transition: "opacity 0.3s ease-in-out",
-          }}
-        >
-          <div className="p-4 pb-0 force-overflow">
-            <h2 className="text-white text-[36px]">
-              {editingGroup ? "Edit Group" : "Add New Group"}
-            </h2>
-          </div>
-          <div className="p-6 bg-[#1C2546] text-white rounded-b-lg">
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label
-                  htmlFor="groupName"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  Group Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="groupName"
-                  placeholder="Enter your group Name here"
-                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.groupName}
-                  onChange={handleInputChange}
-                />
-                {errors.groupName && (
-                  <span className={styles.error}>{errors.groupName}</span>
-                )}
-              </div>
+          <SlidingPanel
+            isOpen={isPanelOpen}
+            onClose={() => setIsPanelOpen(false)}
+            width="w-[700px]"
+            style={{
+              height: "685px",
+              top: "0px",
+              left: "998px",
+              gap: "20px",
+              opacity: isPanelOpen ? 1 : 0,
+              transition: "opacity 0.3s ease-in-out",
+            }}
+          >
+            <div className="p-4 pb-0 force-overflow">
+              <h2 className="text-white text-[36px]">
+                {userRole === "editor"
+                  ? "View Group"
+                  : editingGroup
+                  ? "Edit Group"
+                  : "Add New Group"}
+              </h2>
+            </div>
+            <div className="p-6 bg-[#1C2546] text-white rounded-b-lg">
+              <div>
+                <div className="mb-4">
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Group Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="groupName"
+                    placeholder="Enter your group Name here"
+                    className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
+                    value={formValues.groupName}
+                    onChange={handleInputChange}
+                    disabled={userRole === "editor"}
+                  />
+                  {userRole === "admin" && errors.groupName && (
+                    <span className={styles.error}>{errors.groupName}</span>
+                  )}
+                </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="description"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  Description <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="description"
-                  placeholder="Group description goes here"
-                  rows="4"
-                  className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
-                  value={formValues.description}
-                  onChange={handleInputChange}
-                ></textarea>
-                {errors.description && (
-                  <span className={styles.error}>{errors.description}</span>
-                )}
-              </div>
+                <div className="mb-4">
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Description <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    id="description"
+                    placeholder="Group description goes here"
+                    rows="4"
+                    className="w-full p-3 bg-[#1C2546] text-white rounded-lg border border-gray-600 focus:outline-none placeholder-dark"
+                    value={formValues.description}
+                    onChange={handleInputChange}
+                    disabled={userRole === "editor"}
+                  />
+                  {userRole === "admin" && errors.description && (
+                    <span className={styles.error}>{errors.description}</span>
+                  )}
+                </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="status"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  Status <span className="text-red-500">*</span>
-                </label>
-                <CustomSelect
-                  value={formValues.status}
-                  options={[
-                    { value: "active", label: "Active" },
-                    { value: "inactive", label: "In Active" },
-                  ]}
-                  onChange={(newValue) =>
-                    handleInputChange({
-                      target: { id: "status", value: newValue },
-                    })
-                  }
-                  placeholder="Select Status"
-                />
-                {errors.status && (
-                  <span className={styles.error}>{errors.status}</span>
-                )}
-              </div>
+                <div className="mb-4">
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Status <span className="text-red-500">*</span>
+                  </label>
+                  <CustomSelect
+                    value={formValues.status}
+                    options={[
+                      { value: "active", label: "Active" },
+                      { value: "inactive", label: "In Active" },
+                    ]}
+                    onChange={(newValue) =>
+                      handleInputChange({
+                        target: { id: "status", value: newValue },
+                      })
+                    }
+                    placeholder="Select Status"
+                    isDisabled={userRole === "editor"} // Pass isDisabled prop
+                  />
+                  {userRole === "admin" && errors.status && (
+                    <span className={styles.error}>{errors.status}</span>
+                  )}
+                </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="segmentation"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  Segmentation Criteria <span className="text-red-500">*</span>
-                </label>
-                <CustomSelect
-                  options={[
-                    { value: "keap", label: "Keap" },
-                    { value: "go_high_level", label: "Go High Level" },
-                  ]}
-                  value={formValues.segmentation}
-                  onChange={(newValue) =>
-                    handleInputChange({
-                      target: { id: "segmentation", value: newValue },
-                    })
-                  }
-                  placeholder="Select Segmentation Criteria"
-                />
-                {errors.segmentation && (
-                  <span className={styles.error}>{errors.segmentation}</span>
-                )}
-              </div>
+                <div className="mb-4">
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Segmentation Criteria{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <CustomSelect
+                    options={[
+                      { value: "keap", label: "Keap" },
+                      { value: "go_high_level", label: "Go High Level" },
+                    ]}
+                    value={formValues.segmentation}
+                    onChange={(newValue) =>
+                      handleInputChange({
+                        target: { id: "segmentation", value: newValue },
+                      })
+                    }
+                    placeholder="Select Segmentation Criteria"
+                    isDisabled={userRole === "editor"} // Pass isDisabled prop
+                  />
+                  {userRole === "admin" && errors.segmentation && (
+                    <span className={styles.error}>{errors.segmentation}</span>
+                  )}
+                </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="tagAssigned"
-                  className="block text-white text-sm font-medium mb-2"
-                >
-                  Tag Assigned <span className="text-red-500">*</span>
-                </label>
+                <div className="mb-4">
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Tag Assigned <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    isMulti
+                    name="tagAssigned"
+                    options={
+                      !formValues.segmentation
+                        ? [
+                            {
+                              value: "",
+                              label: "Select Segmentation Criteria First",
+                              isDisabled: true,
+                            },
+                          ]
+                        : tags.length > 0
+                        ? [
+                            ...tags.map((tag) => ({
+                              value: tag.id,
+                              label: tag.tag_name,
+                            })),
+                          ]
+                        : [
+                            {
+                              value: "",
+                              label: "No tags available",
+                              isDisabled: true,
+                            },
+                          ]
+                    }
+                    value={formValues.tagAssigned}
+                    onChange={handleTagsChange}
+                    placeholder={tagLoader ? "Loading tags..." : "Select Tags"}
+                    classNamePrefix="select"
+                    styles={customStyles}
+                    isDisabled={userRole === "editor"}
+                  />
+                  {userRole === "admin" && errors.tagAssigned && (
+                    <span className={styles.error}>{errors.tagAssigned}</span>
+                  )}
+                </div>
 
-                <Select
-                  isMulti
-                  name="tagAssigned"
-                  options={
-                    !formValues.segmentation
-                      ? [
-                          {
-                            value: "",
-                            label: "Select Segmentation Criteria First",
-                            isDisabled: true,
-                          },
-                        ]
-                      : tags.length > 0
-                      ? [
-                          ...tags.map((tag) => ({
-                            value: tag.id,
-                            label: tag.tag_name,
-                          })),
-                        ]
-                      : [
-                          {
-                            value: "",
-                            label: "No tags available",
-                            isDisabled: true,
-                          },
-                        ]
-                  }
-                  value={formValues.tagAssigned}
-                  onChange={handleTagsChange}
-                  placeholder={tagLoader ? "Loading tags..." : "Select Tags"}
-                  classNamePrefix="select"
-                  styles={customStyles}
-                />
-
-                {errors.tagAssigned && (
-                  <span className={styles.error}>{errors.tagAssigned}</span>
-                )}
-              </div>
-
-              <div className={styles.field8}>
-                <label className="block text-white text-sm font-medium mb-2">
-                  Assign Editors <span className="text-red-500">*</span>
-                </label>
-                <div className={styles.selectWrapper}>
+                <div className="mb-4">
+                  <label className="block text-white text-sm font-medium mb-2">
+                    Assign Editors <span className="text-red-500">*</span>
+                  </label>
                   <Select
                     isMulti
                     name="editors"
@@ -732,70 +756,74 @@ export default function Groupmanagement() {
                     placeholder="Select editors"
                     classNamePrefix="select"
                     styles={customStyles}
+                    isDisabled={userRole === "editor"}
                   />
-                  {errors.assignedEditors && (
+                  {userRole === "admin" && errors.assignedEditors && (
                     <span className={styles.error}>
                       {errors.assignedEditors}
                     </span>
                   )}
                 </div>
+
+                {userRole === "admin" && (
+                  <div className="mb-4 mt-4 flex justify-start space-x-4">
+                    <button
+                      type="submit"
+                      className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
+                      onClick={handleSubmit}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <Loading />
+                      ) : editingGroup ? (
+                        "Update Group"
+                      ) : (
+                        "Submit & Save"
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"
+                      onClick={() => {
+                        setFormValues({
+                          groupName: "",
+                          description: "",
+                          status: "",
+                          segmentation: "",
+                          tagAssigned: [],
+                          assignedEditors: [],
+                        });
+                        setErrors({});
+                      }}
+                    >
+                      <span className="mr-2">
+                        <img src="/images/clear_logo.svg" alt="Recycle Icon" />
+                      </span>
+                      Clear
+                    </button>
+                  </div>
+                )}
               </div>
+            </div>
+          </SlidingPanel>
 
-              <div className="mb-4 mt-4 flex justify-start space-x-4">
-                <button
-                  type="submit"
-                  className="w-[250px] h-[54px] p-[10px_8px] bg-[#4E71F3] text-white font-bold rounded-lg hover:bg-[#3c5bb3] focus:outline-none flex items-center justify-center"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Loading />
-                  ) : editingGroup ? (
-                    "Update Group"
-                  ) : (
-                    "Submit & Save"
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  className="w-[250px] h-[54px] p-[10px_8px] border border-gray-600 text-white font-bold rounded-lg hover:bg-[#2a3b61] focus:outline-none flex items-center justify-center"
-                  onClick={() => {
-                    setFormValues({
-                      groupName: "",
-                      description: "",
-                      status: "",
-                      segmentation: "",
-                      tagAssigned: [],
-                      assignedEditors: [],
-                    });
-                    setErrors({});
-                  }}
-                >
-                  <span className="mr-2">
-                    <img src="/images/clear_logo.svg" alt="Recycle Icon" />
-                  </span>
-                  Clear
-                </button>
-              </div>
-            </form>
-          </div>
-        </SlidingPanel>
-
-        <ConfirmationDialog
-          isOpen={isConfirmDialogOpen}
-          onClose={() => setIsConfirmDialogOpen(false)}
-          onConfirm={confirmDelete}
-          message="Are you sure you want to delete this group?"
-        />
-
-        {popup.show && (
-          <Popup
-            message={popup.message}
-            type={popup.type}
-            onClose={() => setPopup({ ...popup, show: false })}
+          <ConfirmationDialog
+            isOpen={isConfirmDialogOpen}
+            onClose={() => setIsConfirmDialogOpen(false)}
+            onConfirm={confirmDelete}
+            message="Are you sure you want to delete this group?"
           />
-        )}
+
+          {popup.show && (
+            <Popup
+              message={popup.message}
+              type={popup.type}
+              onClose={() => setPopup({ ...popup, show: false })}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </ProtectedPage>
   );
 }

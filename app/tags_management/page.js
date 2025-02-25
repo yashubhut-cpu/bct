@@ -349,7 +349,10 @@ export default function TagsManagement() {
               <form onSubmit={handleSubmit}>
                 {/* input 1 */}
                 <div className={styles.inputGroup}>
-                  <label>Segmentation Criteria*</label>
+                  <label>
+                    Segmentation Criteria{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
 
                   <Select
                     name="segmentationCriteria"
@@ -386,7 +389,9 @@ export default function TagsManagement() {
 
                 {/* input 2 */}
                 <div className={styles.inputGroup}>
-                  <label>Tag*</label>
+                  <label>
+                    Tag <span className="text-red-500">*</span>
+                  </label>
                   <Select
                     isMulti
                     name="tags"

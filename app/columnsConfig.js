@@ -10,16 +10,20 @@ const columnsConfig = {
     "action",
     "eye",
   ],
-  groupmanagement: [
-    "groupName",
-    "description",
-    "assignedEditors",
-    "status",
-    "createdDate",
-    "action",
-    "edit",
-    "delete",
-  ],
+  groupmanagement: (role) => {
+    const baseColumns = [
+      "groupName",
+      "description",
+      "assignedEditors",
+      "status",
+      "createdDate",
+      "action",
+    ];
+    if (role === "editor") {
+      return [...baseColumns, "eye"]; // Editor sees only "eye"
+    }
+    return [...baseColumns, "edit", "delete"]; // Admin sees "edit" and "delete" (default)
+  },
   logreport: [
     "id",
     "checkbox",

@@ -232,7 +232,7 @@ const TableRow = ({
         return (
           <div className="flex items-center space-x-1">
             <XCircleIcon className="min-w-5 h-5 text-red-500" />
-            <span className="text-white">Not Active</span>
+            <span className="text-white">In Active</span>
           </div>
         );
       case "completed":
@@ -248,7 +248,12 @@ const TableRow = ({
       case "failed":
         return <XCircleIcon className="w-5 h-5 text-red-500" />;
       default:
-        return null;
+        return (
+          <div className="flex items-center space-x-1">
+            <XCircleIcon className="min-w-5 h-5 text-red-500" />
+            <span className="text-white">In Active</span>
+          </div>
+        );
     }
   };
 

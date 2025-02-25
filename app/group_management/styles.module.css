@@ -353,3 +353,9 @@
     opacity: 0;
   }
 }
+
+.disabledButton {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
